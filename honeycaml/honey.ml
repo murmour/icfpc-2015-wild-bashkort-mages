@@ -7,6 +7,6 @@ let game: Game_t.t =
 
 let () =
   let { width; height; filled }: Game_t.t = game in
-  let board = Board.create ~width ~height ~filled in
-  let score = Board.get_score board in
+  let board = Simulator.make ~width ~height ~filled in
+  let score = Simulator.get_score board in
   ()

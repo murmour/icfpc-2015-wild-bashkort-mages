@@ -1,25 +1,11 @@
 
 type t
-type focus
-
-type command =
-  | MoveE
-  | MoveW
-  | MoveSE
-  | MoveSW
-  | TurnCW
-  | TurnCCW
-
-type outcome =
-  | Focus of focus
-  | Board of t
-  | Finish
 
 
-val create: width: int -> height: int -> filled: Cell_t.t list -> t
+val make: width: int -> height: int -> t
 
-val add_unit: t -> Unit_t.t -> outcome
+val set: t -> Cell_t.t -> bool -> unit
 
-val command: focus -> command -> outcome
+val get: t -> Cell_t.t -> bool option
 
-val get_score: t -> int
+val copy: t -> t
