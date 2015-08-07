@@ -65,3 +65,9 @@ let rotate ~(pivot: Cell_t.t) (p: Cell_t.t) dir : Cell_t.t =
 
 let copy (b: t) =
   { b with arr = Array.copy b.arr }
+
+let is_valid_cell (b: t) (c: Cell_t.t) =
+  c.x < b.width && c.y < b.height
+
+let is_empty_cell (b: t) (c: Cell_t.t) =
+  is_valid_cell b c && (not b.arr.(c.y * b.width + c.x))
