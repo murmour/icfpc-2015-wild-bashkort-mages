@@ -150,22 +150,22 @@ struct STATE
 	bool spawn_unit( PAR n_pivot, vector< PAR > n_unit )
 	{
 		int mi = o_O, ma = -o_O;
-		FA(a,n_unit) mi = min( mi, n_unit[a].Y - n_pivot.Y );
+		FA(a,n_unit) mi = min( mi, n_unit[a].Y );
 		FA(a,n_unit) move_pnt( n_unit[a], 5, mi );
 		move_pnt( n_pivot, 5, mi );
+
 		mi = o_O;
 		FA(a,n_unit)
 		{
 			mi = min( mi, n_unit[a].X );
 			ma = max( ma, n_unit[a].X );
 		}
-		//cerr << mi << " " << ma << "\n";
+
 		int d = (width - (ma-mi+1))/2 - mi;
 		FA(a,n_unit) move_pnt( n_unit[a], 3, d );
 		move_pnt( n_pivot, 3, d );
 
 		FA(a,n_unit) if (board[n_unit[a].Y][n_unit[a].X]) return false;
-
 		pivot = n_pivot;
 		unit = n_unit;
 		return true;
