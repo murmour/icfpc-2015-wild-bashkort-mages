@@ -32,14 +32,14 @@ class Unit:
     def __str__(self):
         return '%s | %s' % (str(self.pivot), str(self.members))
 
-class TileWidget(QtGui.QDockWidget):
+class TileWidget(QtGui.QWidget):
     
     def __init__(self, owner):
         self.pivot = (0, 0)
         self.cells = []
         self.w = 0
-        self.h = 0
-        QtGui.QDockWidget.__init__(self, owner)
+        self.h = 0        
+        QtGui.QWidget.__init__(self)        
         
     def setData(self, data):
         self.pivot = data.pivot
@@ -48,6 +48,7 @@ class TileWidget(QtGui.QDockWidget):
         self.h = max([t[1] for t in self.cells] + [self.pivot[1]]) + 1
         #print(self.w)
         #print(self.h)
+        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE + 10)
         self.update()
         
     def paintEvent(self, ev):        
@@ -69,10 +70,10 @@ class TileWidget(QtGui.QDockWidget):
         p.drawEllipse(QtCore.QPoint(dx + j * SIZE + SIZE // 2, i * SIZE * 42 // 50 + SIZE // 2), 5, 5)
         
     
-class TileWidget2(QtGui.QDockWidget):
+class TileWidget2(QtGui.QWidget):
     
     def __init__(self, owner):
-        QtGui.QDockWidget.__init__(self, owner)
+        QtGui.QWidget.__init__(self)
         self.h = None
         self.cur_unit = None
     
@@ -218,19 +219,31 @@ class UnitsPanel(QtGui.QDockWidget):
         self.owner = owner
         self.setObjectName('object_creator') # for state saving
         
-        self.cbx = QtGui.QComboBox()        
-        self.wi = TileWidget(self)
+        #self.cbx = QtGui.QComboBox()        
+        #self.wi = TileWidget(self)
         
-        self.cbx.currentIndexChanged.connect(self.onChanged)        
+        #self.cbx.currentIndexChanged.connect(self.onChanged)        
         
-        layout = cmn.VBox([self.cbx, self.wi])          
-        self.setWidget(cmn.ensureWidget(layout))
+        #layout = cmn.VBox([self.cbx, self.wi])          
+        #self.setWidget(cmn.ensureWidget(layout))
+        
+        self.setWidget(QtGui.QWidget())
         self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
     
     def setData(self, units):
         self.units = units
-        self.cbx.clear()
-        self.cbx.addItems([str(i) for i in range(len(units))])
+        def make(x):
+            t = TileWidget(self)
+            t.setData(x)
+            return t
+            
+        layout = cmn.VBox([make(x) for x in units])
+        wrap = QtGui.QScrollArea()
+        wrap.setWidget(cmn.ensureWidget(layout))        
+        self.setWidget(wrap)
+        
+        #self.cbx.clear()
+        #self.cbx.addItems([str(i) for i in range(len(units))])
         
     def onChanged(self, idx):
         if idx < 0:
@@ -268,9 +281,10 @@ def decode_cmd(s):
 
 class TileEditor(QtGui.QMainWindow):
     
-    def __init__(self):
+    def __init__(self, solname):
         QtGui.QMainWindow.__init__(self)
         
+        self.solname = solname        
         
         #self.img = QtGui.QImage(self.w * 50, self.h * 50,
         #                        QtGui.QImage.Format_ARGB32)
@@ -315,10 +329,11 @@ class TileEditor(QtGui.QMainWindow):
         self.cbx.addItems([str(i) for i in range(24)])
                 
         self.show() 
+        self.showSol()
     
     
     def showSol(self):
-        with io.open('test.json', 'r') as f:
+        with io.open(self.solname, 'r') as f:
             sol = json.loads(f.read())
         sol = sol[0]
         id = sol["problemId"]
@@ -327,12 +342,12 @@ class TileEditor(QtGui.QMainWindow):
         self.cmds = sol['solution']
         print(decode_cmd(self.cmds))
         if self.data['id'] != id:
-            print('wrong id!')
+            print('wrong id, reloading')
+            self.cbx.setCurrentIndex(id)
             #return
         print('Tag = %s, seed = %d' % (tag, seed))
         self.seq = gen_rand(seed, self.data['sourceLength'])
-        
-        
+                
         next_unit = True
         unit_idx = 0
         #cur_pos = None
@@ -429,7 +444,10 @@ def main():
     #print(decode_cmd('ctulhu'))
     #return
     app = QtGui.QApplication(sys.argv)
-    _ = TileEditor()
+    fname = 'test.json'
+    if len(sys.argv) > 1:
+        fname = sys.argv[1]    
+    _ = TileEditor(fname)
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
