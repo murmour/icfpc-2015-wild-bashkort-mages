@@ -9,201 +9,265 @@
 . . . . . . # . . . 
  . # . . . . # . . . 
 
-. . $ $ . . . . . . 
- . . . $ $ . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. * . . . . . . . . 
- . $ $ . . . . . . . 
-. . . $ $ . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . * . . . . . . . . 
-. . $ $ . . . . . . 
- . . . $ $ . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . . $ $ . . . . . 
- . . . . $ $ . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . . $ $ . . . . . 
- . . . . $ $ . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . $ * . . . . . . . 
-$ $ . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. $ $ . . . . . . . 
- . . * . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . $ . . . . . . 
- . . * . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . $ $ . . . . 
- . . * $ . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . . $ $ . . . . . 
- . . . . $ $ . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . $ $ . . . . 
- . . * $ . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . $ . . . . . . 
- . . * . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. $ $ . . . . . . . 
- . . * . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . $ * . . . . . . . 
-$ $ . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . $ . . . . . . . 
- . . $ . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
-. . . . . . . . . . 
- . . * . . . . . . . 
-. . . $ $ . . . . . 
- . . . . $ $ . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . . . . . 
- . . . . . . . . . . 
-. . . . . . # . . . 
- . # . . . . # . . . 
-
+261
+-1 9 5 lllRLRLRLRRrr2lllLR2
+0 10 4 lllRLRLRLRRrr2lllLrrRr2llL2
+0 9 4 lllRLRLRLRRrr2lllLrrRr2ll2
+4 10 3 lllRLRLRLRRrr2lllLrrRr2lRrrr2l2
+6 10 3 lllRLRLRLRRrr2lllLrrRr2lRrrr2r2
+5 10 3 lllRLRLRLRRrr2lllLrrRr2lRrrr22
+5 10 4 lllRLRLRLRRrr2lllLrrRr2lRrrr1
+4 10 4 lllRLRLRLRRrr2lllLrrRr2lRrr1
+3 10 4 lllRLRLRLRRrr2lllLrrRr2lRr2
+2 10 4 lllRLRLRLRRrr2lllLrrRr2lR2
+1 9 4 lllRLRLRLRRrr2lllLrrRr2l2
+3 9 3 lllRLRLRLRRrr2lllLrrRr2rr2l2
+5 9 3 lllRLRLRLRRrr2lllLrrRr2rr2r2
+4 9 3 lllRLRLRLRRrr2lllLrrRr2rr22
+4 9 4 lllRLRLRLRRrr2lllLrrRr2rr1
+3 9 4 lllRLRLRLRRrr2lllLrrRr2r1
+2 9 4 lllRLRLRLRRrr2lllLrrRr22
+2 9 5 lllRLRLRLRRrr2lllLrrRr1
+1 9 5 lllRLRLRLRRrr2lllLrrR1
+0 8 4 lllRLRLRLRRrr2lllLrrrrr2llll2
+1 8 4 lllRLRLRLRRrr2lllLrrrrr2lll2
+2 8 4 lllRLRLRLRRrr2lllLrrrrr2ll2
+10 10 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrRrR2
+9 9 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrRr2
+9 10 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1llRrr2
+8 10 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1llRr2
+7 10 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1llR2
+6 9 5 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1ll11
+6 9 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1ll2
+7 9 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR1l2
+8 9 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR11
+8 9 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrR2
+10 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrrr2
+5 8 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr1llll1
+6 8 5 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr1lll11
+6 8 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr1lllL
+7 8 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr1ll1
+8 8 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr1l1
+9 8 4 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr11
+9 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrrr2
+8 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrrr2
+7 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rrrr2
+6 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rrr2
+5 8 3 lllRLRLRLRRrr2lllLrrrrr2l2rr2
+4 8 3 lllRLRLRLRRrr2lllLrrrrr2l2r2
+3 8 3 lllRLRLRLRRrr2lllLrrrrr2l22
+4 8 5 lllRLRLRLRRrr2lllLrrrrr1
+3 8 5 lllRLRLRLRRrr2lllLrrrr1
+2 8 5 lllRLRLRLRRrr2lllLrrr1
+1 8 5 lllRLRLRLRRrr2lllLrr1
+0 8 5 lllRLRLRLRRrr2lllLr1
+-1 8 5 lllRLRLRLRRrr2lllL2
+-1 7 5 lllRLRLRLRRrr2lll2
+3 7 2 lllRLRLRLRRrr2ll2rrrrrrrr2lllll22
+3 7 3 lllRLRLRLRRrr2ll2rrrrrrrr2llllll
+4 7 3 lllRLRLRLRRrr2ll2rrrrrrrr2llll2
+6 7 2 lllRLRLRLRRrr2ll2rrrrrrrr2lll2r2
+5 7 2 lllRLRLRLRRrr2ll2rrrrrrrr2lll22
+7 7 3 lllRLRLRLRRrr2ll2rrrrrrrr2l2
+9 7 3 lllRLRLRLRRrr2ll2rrrrrrrr2r2
+8 7 3 lllRLRLRLRRrr2ll2rrrrrrrr22
+8 7 4 lllRLRLRLRRrr2ll2rrrrrrrr1
+7 7 4 lllRLRLRLRRrr2ll2rrrrrrr1
+3 7 5 lllRLRLRLRRrr2ll2rrrrrr1lll1
+4 7 5 lllRLRLRLRRrr2ll2rrrrrr1ll1
+5 7 5 lllRLRLRLRRrr2ll2rrrrrr1l1
+6 7 0 lllRLRLRLRRrr2ll2rrrrrr111
+6 7 5 lllRLRLRLRRrr2ll2rrrrrr1r
+2 7 4 lllRLRLRLRRrr2ll2rr2
+1 7 4 lllRLRLRLRRrr2ll2r2
+0 7 4 lllRLRLRLRRrr2ll22
+2 7 0 lllRLRLRLRRrr1
+1 7 0 lllRLRLRLRRr1
+0 7 0 lllRLRLRLRR1
+-1 6 5 lllRLRLRLRrr2lll2
+8 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll2rrrrr2
+7 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll2rrrr2
+6 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll2rrr2
+5 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll2rr2
+4 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll2r2
+3 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2llllll22
+3 6 3 lllRLRLRLRrr2ll2rrrrrrrrr2llllllL
+10 7 2 lllRLRLRLRrr2ll2rrrrrrrrr2r2R2
+10 6 2 lllRLRLRLRrr2ll2rrrrrrrrr2r22
+10 6 3 lllRLRLRLRrr2ll2rrrrrrrrr2r1
+9 6 3 lllRLRLRLRrr2ll2rrrrrrrrr22
+9 6 4 lllRLRLRLRrr2ll2rrrrrrrrr1
+8 6 4 lllRLRLRLRrr2ll2rrrrrrrr1
+7 6 4 lllRLRLRLRrr2ll2rrrrrrr1
+3 6 5 lllRLRLRLRrr2ll2rrrrrr1lll1
+4 6 5 lllRLRLRLRrr2ll2rrrrrr1ll1
+6 6 0 lllRLRLRLRrr2ll2rrrrrr1l1r1
+5 6 0 lllRLRLRLRrr2ll2rrrrrr1l11
+6 6 5 lllRLRLRLRrr2ll2rrrrrr1r
+2 6 4 lllRLRLRLRrr2ll2rr2
+1 6 4 lllRLRLRLRrr2ll2r2
+0 6 4 lllRLRLRLRrr2ll22
+2 6 0 lllRLRLRLRrr1
+1 6 0 lllRLRLRLRr1
+0 6 0 lllRLRLRLR1
+-1 5 5 lllRLRLRLrrrrrrr2lllllll2
+10 5 2 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrrr2
+9 5 3 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrr11
+7 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrr2ll2
+8 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrr2l2
+9 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrr22
+9 5 2 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrrL
+8 5 2 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrrrrR
+6 5 2 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rrr2
+2 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rr2lll1
+3 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rr2llR
+4 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rr2lR
+5 5 1 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2rr2r
+3 5 2 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2lllll2l
+3 5 3 lllRLRLRLrrrrrrr2llllll2rrrrrrrr2llllll
+8 5 4 lllRLRLRLrrrrrrr2llllll2rrrrrrrr1
+7 5 4 lllRLRLRLrrrrrrr2llllll2rrrrrrr1
+2 5 4 lllRLRLRLrrrrrrr2llllll2rr2
+1 5 4 lllRLRLRLrrrrrrr2llllll2r2
+0 5 4 lllRLRLRLrrrrrrr2llllll22
+6 5 5 lllRLRLRLrrrrrrr2r
+6 5 0 lllRLRLRLrrrrrrr1
+4 5 0 lllRLRLRLrrrrrL
+3 5 0 lllRLRLRLrrrrR
+2 5 0 lllRLRLRLrrrR
+1 5 0 lllRLRLRLrr1
+0 5 1 lllRLRLRLr11
+-1 5 0 lllRLRLRL1
+-1 4 5 lllRLRLRrrrrrr2lllllll2
+10 4 3 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrrrrrr11
+10 4 2 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrrrrrr2
+7 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrrrrr2ll2
+8 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrrrrr2l2
+9 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrrrrr22
+6 4 2 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rrr2
+1 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rr2llll1
+2 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rr2lll1
+5 4 1 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2rr2r
+3 4 2 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllll2L
+3 4 3 lllRLRLRrrrrrr2llllll2rrrrrrrrr2llllllL
+9 4 4 lllRLRLRrrrrrr2llllll2rrrrrrrrr1
+8 4 4 lllRLRLRrrrrrr2llllll2rrrrrrrr1
+7 4 4 lllRLRLRrrrrrr2llllll2rrrrrrr1
+2 4 4 lllRLRLRrrrrrr2llllll2rr2
+1 4 4 lllRLRLRrrrrrr2llllll2r2
+0 4 4 lllRLRLRrrrrrr2llllll22
+6 4 5 lllRLRLRrrrrrr2r
+6 4 0 lllRLRLRrrrrrr1
+0 4 0 lllRLRLR1
+0 3 1 lllRLRLrrrrrrr1llllll1
+1 3 1 lllRLRLrrrrrrr1lllll1
+2 3 1 lllRLRLrrrrrrr1llll1
+10 3 2 lllRLRLrrrrrrr1lll1rrrrrrr2
+3 3 3 lllRLRLrrrrrrr1lll1rrrrrr1llllll1
+4 3 3 lllRLRLrrrrrrr1lll1rrrrrr1lllll1
+5 3 3 lllRLRLrrrrrrr1lll1rrrrrr1llll1
+6 3 3 lllRLRLrrrrrrr1lll1rrrrrr1lll1
+7 3 3 lllRLRLrrrrrrr1lll1rrrrrr1ll1
+8 3 3 lllRLRLrrrrrrr1lll1rrrrrr1l1
+9 3 3 lllRLRLrrrrrrr1lll1rrrrrr11
+7 3 1 lllRLRLrrrrrrr1lll1rrrrrr2ll2
+8 3 1 lllRLRLrrrrrrr1lll1rrrrrr2l2
+9 3 1 lllRLRLrrrrrrr1lll1rrrrrr22
+3 3 2 lllRLRLrrrrrrr1lll1l
+5 3 1 lllRLRLrrrrrrr1lR
+6 3 1 lllRLRLrrrrrrr1L
+-1 3 5 lllRLRLrrrrrrr2lllllll2
+0 3 5 lllRLRLrrrrrrr2llllll2
+1 3 5 lllRLRLrrrrrrr2lllll2
+2 3 5 lllRLRLrrrrrrr2llll2
+3 3 5 lllRLRLrrrrrrr2lll2
+4 3 5 lllRLRLrrrrrrr2ll2
+5 3 5 lllRLRLrrrrrrr2l2
+6 3 5 lllRLRLrrrrrrr22
+6 3 0 lllRLRLrrrrrrrr
+-1 3 0 lllRLRL1
+1 2 1 lllRLRrrrrrr1lllll1
+2 2 1 lllRLRrrrrrr1llll1
+3 2 3 lllRLRrrrrrr1lll1rrrrrrr1lllllll1
+4 2 3 lllRLRrrrrrr1lll1rrrrrrr1llllll1
+5 2 3 lllRLRrrrrrr1lll1rrrrrrr1lllll1
+6 2 3 lllRLRrrrrrr1lll1rrrrrrr1llll1
+7 2 3 lllRLRrrrrrr1lll1rrrrrrr1lll1
+8 2 3 lllRLRrrrrrr1lll1rrrrrrr1ll1
+9 2 3 lllRLRrrrrrr1lll1rrrrrrr1l1
+10 2 3 lllRLRrrrrrr1lll1rrrrrrr11
+10 2 2 lllRLRrrrrrr1lll1rrrrrrr2
+7 2 1 lllRLRrrrrrr1lll1rrrrrr2ll2
+8 2 1 lllRLRrrrrrr1lll1rrrrrr2l2
+9 2 1 lllRLRrrrrrr1lll1rrrrrr22
+3 2 2 lllRLRrrrrrr1lll1L
+-1 2 5 lllRLRrrrrrr2lllllll2
+0 2 5 lllRLRrrrrrr2llllll2
+1 2 5 lllRLRrrrrrr2lllll2
+2 2 5 lllRLRrrrrrr2llll2
+3 2 5 lllRLRrrrrrr2lll2
+4 2 5 lllRLRrrrrrr2ll2
+5 2 5 lllRLRrrrrrr2l2
+6 2 5 lllRLRrrrrrr22
+6 2 0 lllRLRrrrrrrr
+0 2 0 lllRLR1
+0 1 1 lllRLrrrrrrr1llllll1
+1 1 1 lllRLrrrrrrr1lllll1
+2 1 1 lllRLrrrrrrr1llll1
+10 1 2 lllRLrrrrrrr1lll1rrrrrrr2
+7 1 1 lllRLrrrrrrr1lll1rrrrrr2ll2
+8 1 1 lllRLrrrrrrr1lll1rrrrrr2l2
+9 1 1 lllRLrrrrrrr1lll1rrrrrr22
+9 1 2 lllRLrrrrrrr1lll1rrrrrr1
+8 1 2 lllRLrrrrrrr1lll1rrrrr1
+7 1 2 lllRLrrrrrrr1lll1rrrr1
+6 1 2 lllRLrrrrrrr1lll1rrr1
+5 1 2 lllRLrrrrrrr1lll1rr1
+4 1 2 lllRLrrrrrrr1lll1r1
+3 1 2 lllRLrrrrrrr1lll11
+6 1 0 lllRLrrrrrrr2
+5 1 0 lllRLrrrrrr2
+4 1 0 lllRLrrrrr2
+3 1 0 lllRLrrrr2
+2 1 0 lllRLrrr2
+1 1 0 lllRLrr2
+0 1 0 lllRLr2
+-1 1 0 lllRL2
+1 0 1 lllRrrrrrr1lllll1
+2 0 1 lllRrrrrrr1llll1
+10 0 2 lllRrrrrrr1lll1rrrrrrr2
+7 0 1 lllRrrrrrr1lll1rrrrrr2ll2
+8 0 1 lllRrrrrrr1lll1rrrrrr2l2
+9 0 1 lllRrrrrrr1lll1rrrrrr22
+9 0 2 lllRrrrrrr1lll1rrrrrr1
+8 0 2 lllRrrrrrr1lll1rrrrr1
+7 0 2 lllRrrrrrr1lll1rrrr1
+6 0 2 lllRrrrrrr1lll1rrr1
+5 0 2 lllRrrrrrr1lll1rr1
+4 0 2 lllRrrrrrr1lll1r1
+3 0 2 lllRrrrrrr1lll11
+6 0 0 lllRrrrrrr2
+5 0 0 lllRrrrrr2
+4 0 0 lllRrrrr2
+3 0 0 lllRrrr2
+2 0 0 lllRrr2
+1 0 0 lllRr2
+0 0 0 lllR2
+-1 -1 0 lll2
+9 -1 1 ll1rrrrrrrrr2
+8 -1 1 ll1rrrrrrrr2
+7 -1 1 ll1rrrrrrr2
+3 -1 0 ll1rrrrrr2lll2
+4 -1 0 ll1rrrrrr2ll2
+5 -1 0 ll1rrrrrr2l2
+6 -1 0 ll1rrrrrr22
+6 -1 1 ll1rrrrrr1
+5 -1 1 ll1rrrrr1
+4 -1 1 ll1rrrr1
+3 -1 1 ll1rrr1
+2 -1 1 ll1rr1
+1 -1 1 ll1r1
+0 -1 1 ll11
+0 -1 0 ll2
+1 -1 0 l2
+2 -1 0 2
