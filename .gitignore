@@ -1,1 +1,5 @@
 python-ws/.metadata
+honeycaml/generated/*
+*.native
+*.byte
+_build
