@@ -105,6 +105,7 @@ struct STATE
 				move_pnt( p1, 5, pivot.Y-p.Y );
 				move_pnt( p_end, (move==4 ? 4 : 0), pivot.Y-p.Y );
 				move_pnt( p_end, (move==4 ? 5 : 1), p1.X-p.X );
+                p = p_end;
 			}
 			if (!(0<=p.X && p.X<width && 0<=p.Y && p.Y<height)) return false;
 			if (board[p.Y][p.X]) return false;
