@@ -45,6 +45,9 @@ struct STATE
 
 	PAR pivot;
 	vector< PAR > unit;
+	int rotate;
+
+	int max_rotate;
 
 	void init( int w, int h )
 	{
@@ -96,7 +99,7 @@ struct STATE
 			PAR p = unit[a];
 			if (move <= 3)
 			{
-				move_pnt( p, 1, move );
+				move_pnt( p, move, 1 );
 			}
 			else
 			{
@@ -136,6 +139,29 @@ struct STATE
 			if (a<(int)unit.size()) unit[a] = p;
 			else pivot = p;
 		}
+		if (move==4)
+		{
+			rotate++;
+			if (rotate==max_rotate) rotate = 0;
+		}
+		if (move==5)
+		{
+			rotate--;
+			if (rotate<0) rotate = max_rotate-1;
+		}
+	}
+
+	void undo_move( int move )
+	{
+		if (move <= 3)
+		{
+			int m2 = move+3;
+			if (m2>=6) m2-=6;
+			for( int a=0; a<(int)unit.size(); a++)
+				move_pnt( unit[a], m2, 1 );
+			move_pnt( pivot, m2, 1 );
+		}
+		else do_move( move==4 ? 5 : 4 );
 	}
 
 	void lock_unit()
@@ -145,6 +171,20 @@ struct STATE
 			ass( !board[unit[a].Y][unit[a].X] );
 			board[unit[a].Y][unit[a].X] = true;
 		}
+	}
+
+	int calc_max_rotate()
+	{
+		sort( unit.begin(), unit.end() );
+		vector< PAR > v = unit;
+		FOR(a,0,5)
+		{
+			do_move( 4 );
+			sort( unit.begin(), unit.end() );
+			if (unit==v) return a+1;
+		}
+		ass( false );
+		return -1;
 	}
 
 	bool spawn_unit( PAR n_pivot, vector< PAR > n_unit )
@@ -168,6 +208,10 @@ struct STATE
 		FA(a,n_unit) if (board[n_unit[a].Y][n_unit[a].X]) return false;
 		pivot = n_pivot;
 		unit = n_unit;
+
+		max_rotate = calc_max_rotate();
+		cerr << max_rotate << "\n";
+		rotate = 0;
 		return true;
 	}
 
@@ -191,6 +235,48 @@ struct STATE
 	}
 } S;
 
+set< pair< PAR, int > > Set;
+vector< pair< PAR, int > > end_pos;
+vector< string > cmds;
+string cmd = "lLRr12";
+//string cmd = "palbdk";
+string seq;
+
+void dfs( STATE & sta )
+{
+	Set.insert( make_pair( sta.pivot, sta.rotate ) );
+	int end_cmd = -1;
+	FOR(a,0,5)
+		if (sta.can_move(a))
+		{
+			int tmp = sta.rotate;
+			sta.do_move( a );
+			seq.push_back( cmd[a] );
+			if (Set.find( make_pair( sta.pivot, sta.rotate ) ) == Set.end())
+				dfs( sta );
+			seq.resize( SZ(seq)-1 );
+			sta.undo_move( a );
+			ass( tmp == sta.rotate );
+		}
+		else end_cmd = a;
+	if (end_cmd>=0)
+	{
+		end_pos.push_back( make_pair( sta.pivot, sta.rotate ) );
+		seq.push_back( cmd[end_cmd] );
+		cmds.push_back( seq );
+		seq.resize( SZ(seq)-1 );
+	}
+}
+
+void calc_all_end_positions( STATE sta )
+{
+	Set.clear();
+	seq.clear();
+	end_pos.clear();
+	cmds.clear();
+	dfs( sta );
+}
+
 void sol()
 {
 	S.init( 10, 10 );
@@ -200,6 +286,7 @@ void sol()
 
 	PAR pi = make_pair( 0, 0 );
 	vector< PAR > un;
+	//un.push_back( make_pair( 0, 0 ) );
 	un.push_back( make_pair( 0, 1 ) );
 	un.push_back( make_pair( 1, 1 ) );
 	un.push_back( make_pair( 2, 2 ) );
@@ -208,22 +295,13 @@ void sol()
 
 	S.render();
 
-	FOR(a,0,5)
-	{
-		S.do_move( a );
-		S.render();
-	}
+	calc_all_end_positions( S );
 
-	FOR(a,0,5)
+	cout << SZ(end_pos) << "\n";
+	FA(a,end_pos)
 	{
-		S.do_move( 4 );
-		S.render();
-	}
-
-	FOR(a,0,5)
-	{
-		S.do_move( 5 );
-		S.render();
+		cout << end_pos[a].first.X << " " << end_pos[a].first.Y << " " << end_pos[a].second << " ";
+		cout << cmds[a] << "\n";
 	}
 }
 
