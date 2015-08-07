@@ -1,0 +1,10 @@
+
+type problem =
+  {
+    problemId: int;
+    seed: int;
+    tag: string;
+    solution: string;
+  }
+
+type t = problem list

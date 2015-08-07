@@ -1,0 +1,2 @@
+<**/*.ml>: annot
+<**/*>: package(batteries, atdgen)

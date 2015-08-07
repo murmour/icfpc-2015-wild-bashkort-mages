@@ -1,0 +1,14 @@
+
+type cell <ocaml from="Cell" t="t"> = abstract
+type unit_ <ocaml from="Unit" t="t"> = abstract
+
+type t =
+  {
+    id: int;
+    units: unit_ list;
+    width: int;
+    height: int;
+    filled: cell list;
+    sourceLength: int;
+    sourceSeeds: int list;
+  }
