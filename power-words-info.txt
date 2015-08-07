@@ -1,4 +1,4 @@
-Точно:
+Из условия:
 - ei!
 
 Из входных данных:
@@ -16,6 +16,8 @@
 - hex
 - and
 - simultaneously
+
+Из твиттера:
 - watermelon
 - as2h2
 - pollination
