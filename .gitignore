@@ -1,1 +1,7 @@
 python-ws/.metadata
+
+*.ncb
+*.sln
+*.suo
+*.vcproj
+*.user
