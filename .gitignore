@@ -6,3 +6,8 @@ python-ws/.metadata
 *.vcproj
 *.user
 */Debug
+
+honeycaml/generated/*
+*.native
+*.byte
+_build
