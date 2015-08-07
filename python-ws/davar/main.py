@@ -5,7 +5,7 @@ Created on Aug 7, 2015
 '''
 
 from PyQt4 import QtGui, QtCore
-import json, sys, copy
+import json, sys, copy, os
 import io#, time
 import common as cmn
 
@@ -74,8 +74,10 @@ class TileWidget2(QtGui.QWidget):
     
     def __init__(self, owner):
         QtGui.QWidget.__init__(self)
+        self.owner = owner
         self.h = None
         self.cur_unit = None
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
     
     def setData(self, data, h, w):
         self.h = h
@@ -84,7 +86,11 @@ class TileWidget2(QtGui.QWidget):
         self.initPos()
         self.cur_unit = None
                 
-    
+    def keyPressEvent(self, ev):
+        if ev.key() in qt_keys:
+            self.owner.doCommand(qt_keys[ev.key()])
+            
+            
     def canMove(self, move):
         pivot = self.cur_unit.pivot
         def f(p):            
@@ -161,7 +167,7 @@ class TileWidget2(QtGui.QWidget):
         self.cur_unit = Unit(f(pivot), [f(x) for x in self.cur_unit.members])        
     
     def placeUnit(self, unit):        
-        mi = min([ t[1] - unit.pivot[1] for t in unit.members ])
+        mi = min([ t[1] for t in unit.members ])
         unit = Unit( self.move_pnt(unit.pivot, 5, mi), [ self.move_pnt(p, 5, mi) for p in unit.members ] )
         mi = min( t[0] for t in unit.members )
         ma = max( t[0] for t in unit.members )
@@ -172,11 +178,13 @@ class TileWidget2(QtGui.QWidget):
             assert(not self.cells[y][x])
         
         self.cur_unit = unit
-        print(d)
-        print(unit)
+        #print(d)
+        #print(unit)
         #return unit
     
     def initPos(self):
+        if not self.h:
+            return
         self.cells = [[0] * self.w for _ in range(self.h)]
         for ce in self.init_data:
             self.cells[ ce['y'] ][ ce['x'] ] = 1        
@@ -184,6 +192,7 @@ class TileWidget2(QtGui.QWidget):
     def lockUnit(self):
         for x, y in self.cur_unit.members:
             self.cells[y][x] = 1
+        self.cur_unit = None
     
     def paintEvent(self, ev):
         if not self.h:
@@ -276,6 +285,48 @@ for c in ['l', "m", 'n', 'o', ' ', '5']: cmd_lets[c] = CMDSE
 for c in ['d', "q", 'r', 'v', 'z', '1']: cmd_lets[c] = CMDCW
 for c in ['k', "s", 't', 'u', 'w', 'x']: cmd_lets[c] = CMDCCW
 
+qt_keys = {
+          QtCore.Qt.Key_A : 'a',
+          QtCore.Qt.Key_B : 'b',
+          QtCore.Qt.Key_C : 'c',
+          QtCore.Qt.Key_D : 'd',
+          QtCore.Qt.Key_E : 'e',
+          QtCore.Qt.Key_F : 'f',
+          QtCore.Qt.Key_G : 'g',
+          QtCore.Qt.Key_H : 'h',
+          QtCore.Qt.Key_I : 'i',
+          QtCore.Qt.Key_J : 'j',
+          QtCore.Qt.Key_K : 'k',
+          QtCore.Qt.Key_L : 'l',
+          QtCore.Qt.Key_M : 'm',
+          QtCore.Qt.Key_N : 'n',
+          QtCore.Qt.Key_O : 'o',
+          QtCore.Qt.Key_P : 'p',
+          QtCore.Qt.Key_Q : 'q',
+          QtCore.Qt.Key_R : 'r',
+          QtCore.Qt.Key_S : 's',
+          QtCore.Qt.Key_T : 't',
+          QtCore.Qt.Key_U : 'u',
+          QtCore.Qt.Key_V : 'v',
+          QtCore.Qt.Key_W : 'w',
+          QtCore.Qt.Key_X : 'x',
+          QtCore.Qt.Key_Y : 'y',
+          QtCore.Qt.Key_Z : 'z',
+          QtCore.Qt.Key_0 : '0',
+          QtCore.Qt.Key_1 : '1',
+          QtCore.Qt.Key_2 : '2',
+          QtCore.Qt.Key_3 : '3',
+          QtCore.Qt.Key_4 : '4',
+          QtCore.Qt.Key_Apostrophe : "'",
+          QtCore.Qt.Key_Space : ' ',
+          QtCore.Qt.Key_Period : '.',
+          QtCore.Qt.Key_Exclam : '!',
+          QtCore.Qt.Key_Up : 'd',
+          QtCore.Qt.Key_Down : 'k',
+          QtCore.Qt.Key_Left : 'p',
+          QtCore.Qt.Key_Right : 'b'
+          }
+
 def decode_cmd(s):
     return ' '.join([cmd_names[cmd_lets[c]] for c in s])
 
@@ -308,18 +359,24 @@ class TileEditor(QtGui.QMainWindow):
         self.wi = TileWidget2(self)        
         
         self.frame_lbl = QtGui.QLabel('None')
-        self.act_next = cmn.Action(self, 'Next frame', 'next.png', self.nextFrame, 'F3', enabled=False)
-        self.act_prev = cmn.Action(self, 'Prev frame', 'prev.png', self.prevFrame, 'F2', enabled=False)
-        self.act_play = cmn.Action(self, 'Play', 'play.png', None, 'F5', checkable=True)
+        self.act_next = cmn.Action(self, 'Next frame (F3)', 'next.png', self.nextFrame, 'F3', enabled=False)
+        self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'prev.png', self.prevFrame, 'F2', enabled=False)
+        self.act_play = cmn.Action(self, 'Play (F5)', 'play.png', None, 'F5', checkable=True)
+        self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'hand-point.png', self.gotoMove, 'F1')
         
-        layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_prev), cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_play)])
+        layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove), cmn.ToolBtn(self.act_prev), 
+                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_play)])
         layout = cmn.VBox([layout, self.wi])
         self.setCentralWidget(cmn.ensureWidget(layout))
         
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('Menu')
         self.act_showsol = cmn.Action(self, 'Show solution', '', self.showSol, 'F9')
+        self.act_savesol = cmn.Action(self, 'Save solution', '', self.doSave, 'Ctrl+S')
+        self.act_opensol = cmn.Action(self, 'Open solution file...', '', self.doOpen, 'Ctrl+O')
+        fileMenu.addAction(self.act_opensol)
         fileMenu.addAction(self.act_showsol)
+        fileMenu.addAction(self.act_savesol)
         
         self.backup_timer = QtCore.QTimer()
         self.backup_timer.timeout.connect(self.doPlay)
@@ -331,6 +388,71 @@ class TileEditor(QtGui.QMainWindow):
         self.show() 
         self.showSol()
     
+    def doSave(self):
+        if not self.frames:
+            return
+        sol = {}
+        sol["problemId"] = self.data['id']
+        sol["seed"] = self.seed
+        sol["tag"] = 'davar_visualizer'
+        sol['solution'] = self.cmds
+        sol = [sol]        
+        fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
+        os.makedirs('saves', exist_ok=True)
+        with io.open(fname, 'w') as f:
+            f.write(json.dumps(sol))
+        print('Saved')
+    
+    def doOpen(self):
+        fname = cmn.getOpenFileName(self, 'sol', 'Open solution', 'JSON Files (*.json)')
+        if fname:
+            self.solname = fname
+        self.showSol()
+    
+    def gotoMove(self):
+        val, ok = QtGui.QInputDialog.getInt(self, 'Go to move', 'Go to move', self.cur_frame+1)
+        if ok:
+            self.setFrame(val-1)
+    
+    def startGame(self):        
+        seed = self.data['sourceSeeds'][0]
+        self.seed = seed
+        self.cmds = ''
+        self.seq = gen_rand(seed, self.data['sourceLength'])
+        
+        cur_unit = self.units[self.seq[0] % len(self.units)]
+        self.wi.placeUnit(cur_unit)
+        self.frames = []
+        self.frames.append((copy.deepcopy(self.wi.cells), self.wi.cur_unit, 1))        
+        self.setFrame(0)
+    
+    def doCommand(self, letter):
+        if not self.frames:
+            self.startGame()
+        c = cmd_lets[letter]
+        
+        if self.wi.cur_unit == None:
+            print('No more units!')
+            return
+            
+        # cur_unit is always valid        
+        self.frames = self.frames[0 : self.cur_frame+1]
+        self.cmds = self.cmds[0 : self.cur_frame]
+        unit_idx = self.frames[-1][2]
+        
+        if self.wi.canMove(c):
+            self.wi.doMove(c)
+        else:
+            self.wi.lockUnit()
+            if unit_idx < len(self.seq):
+                cur_unit = self.units[self.seq[unit_idx] % len(self.units)]
+                unit_idx += 1
+                self.wi.placeUnit(cur_unit)
+            
+        self.frames.append((copy.deepcopy(self.wi.cells), self.wi.cur_unit, unit_idx))
+        self.cmds = self.cmds + letter 
+        #print(self.cmds)
+        self.setFrame(self.cur_frame+1)
     
     def showSol(self):
         with io.open(self.solname, 'r') as f:
@@ -338,6 +460,7 @@ class TileEditor(QtGui.QMainWindow):
         sol = sol[0]
         id = sol["problemId"]
         seed = sol["seed"]
+        self.seed = seed
         tag = sol["tag"]
         self.cmds = sol['solution']
         print(decode_cmd(self.cmds))
@@ -414,7 +537,10 @@ class TileEditor(QtGui.QMainWindow):
     
     def doPlay(self):
         if self.act_play.isChecked():
+            if self.cur_frame == len(self.frames) - 1:
+                self.act_play.setChecked(False)
             self.nextFrame()    
+        
     
     def onChanged(self, idx):
         with io.open(fname % idx, 'r') as f:            
