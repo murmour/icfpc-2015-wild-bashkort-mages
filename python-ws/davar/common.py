@@ -354,8 +354,8 @@ icons_cache = {}
 def GetIcon(fname):
     if not fname:
         fname = ''
-    else:
-        fname = _rootdir + '/' + fname
+    #else:
+    #    fname = _rootdir + '/' + fname
     if fname not in icons_cache:
         icons_cache[fname] = QtGui.QIcon(fname)
     return icons_cache[fname] 
