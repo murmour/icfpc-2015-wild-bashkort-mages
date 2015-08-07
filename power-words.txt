@@ -1,4 +1,18 @@
-ei!
-yuggoth
-ia! ia!
-r'lyeh
+Точно:
+- ei!
+
+Из входных данных:
+- yuggoth
+- ia! ia!
+- r'lyeh
+
+Из текстов:
+- something
+- davar
+- visually
+- written
+- actual
+- human
+- hex
+- and
+- simultaneously
