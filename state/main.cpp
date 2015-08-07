@@ -127,7 +127,7 @@ struct STATE
 				PAR p_end = pivot;
 				PAR p1 = pivot;
 				move_pnt( p1, 5, pivot.Y-p.Y );
-				cerr << pivot.Y-p.Y << " " << p1.X-p.X << "\n";
+				//cerr << pivot.Y-p.Y << " " << p1.X-p.X << "\n";
 				move_pnt( p_end, (move==4 ? 4 : 0), pivot.Y-p.Y );
 				move_pnt( p_end, (move==4 ? 5 : 1), p1.X-p.X );
 				p = p_end;
