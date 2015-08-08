@@ -26,7 +26,7 @@ def send_solution(filename) -> bool:
 
 
 def filter_solutions(solver, version):
-    
+
     rx = re.compile('solution_'
                 '(?P<set_id>[0-9]+)_'
                 '(?P<solver>[a-z]+)_'
@@ -35,11 +35,11 @@ def filter_solutions(solver, version):
     def get_id(f):
         m = re.match(rx, f)
         return int(m.group('set_id'))
-    
+
     def is_requested(f):
         m = re.match(rx, f)
         return ((m.group('solver') == solver) and
-                (int(m.group('version')) == version))    
+                (int(m.group('version')) == version))
 
     files = [ f for f in listdir("../../solutions") if is_requested(f) ]
     files.sort(key = lambda x: get_id(x))
@@ -68,7 +68,8 @@ def score_all_solutions(solver, version):
         msg = 'Total = %.2f' % total
         print(msg)
         log.write(msg + '\n')
-    
+
+
 def compare_solutions(solver, version1, version2):
     files = zip(filter_solutions(solver, version1), filter_solutions(solver, version2))
     total = 0
@@ -79,8 +80,8 @@ def compare_solutions(solver, version1, version2):
             scores2 = mm.getScore(f2)
             assert(len(scores1) == len(scores2))
             diff = sum(scores2) - sum(scores1)
-            diffa = [b - a for a, b in zip(scores1, scores2)] 
-                                    
+            diffa = [b - a for a, b in zip(scores1, scores2)]
+
             msg = 'Id = %d %.0f %s' % (id1, diff / len(scores1), diffa)
             print(msg)
             log.write(msg + '\n')
@@ -89,12 +90,10 @@ def compare_solutions(solver, version1, version2):
         print(msg)
         log.write(msg + '\n')
 
-    
+
 def main():
-    #score_all_solutions('rip', 4)
-    compare_solutions('rip', 2, 4)
-    #send_all_solutions(sys.argv[1], int(sys.argv[2]))
-    
+    send_all_solutions(sys.argv[1], int(sys.argv[2]))
+
+
 if __name__ == '__main__':
     main()
-    

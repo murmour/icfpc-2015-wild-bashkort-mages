@@ -41,18 +41,85 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
+string guten_tag = "rip_5";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
 
-string symbols =
+/*string symbols =
 	"p'!.03"
 	"aghij4"
 	"lmno 5"
 	"bcefy2"
 	"dqrvz1"
-	"kstuwx";
+	"kstuwx";*/
 
+typedef unsigned int uint;
+const int MAX_VERS = 2000;
+int n_vers = 0;
+map<vector<int>, int> vers;
+const char letters[] = "p'!.03aghij4lmno 5bcefy2dqrvz1kstuwx";
+const int n_letters = sizeof(letters);
+
+int a_next[MAX_VERS][n_letters];
+int a_mask[MAX_VERS][n_letters];
+
+int get_ver(const vector<int> lens, bool &added)
+{
+	added = false;
+	if (vers.find(lens) != vers.end()) return vers[lens];
+	ass(n_vers < MAX_VERS);
+	vers[lens] = n_vers;
+	added = true;
+	n_vers++;
+	return vers[lens];
+}
+
+void automata_dfs(int prev, string s0)
+{
+	int n_words = powerphrases.size();
+	for (uint i = 0; i < n_letters; i++)
+	{
+		string s = s0 + letters[i];
+		int mask = 0;
+		// compute vector
+		vector<int> lens(n_words);
+		for (uint j = 0; j < powerphrases.size(); j++)
+		{
+			int plen = powerphrases[j].size();
+			for (int le = 1; le <= (int)s.size() && le <= plen; le++)
+			{
+				if (powerphrases[j].substr(0, le) == s.substr(s.size()-le, le)) lens[j] = le;
+			}
+			if (lens[j] == plen) mask |= (1 << j);
+		}
+		bool added = false;
+		int v = get_ver(lens, added);
+		a_next[prev][i] = v;
+		a_mask[prev][i] = mask;
+		if (added) automata_dfs(v, s);
+	}
+}
+
+void build_automata()
+{
+	n_vers = 0;
+	vers.clear();
+	bool dummy;
+	int v = get_ver(vector<int>(powerphrases.size()), dummy);
+	automata_dfs(v, "");
+}
+
+void print_automata()
+{
+	printf("n_vers = %d\n", n_vers);
+	for (int i = 0; i < n_vers; i++)
+	{
+		for (int j = 0; j < n_letters; j++)
+			if (a_next[i][j] || a_mask[i][j])
+				printf("%d -%c-> %d (%d)\n", i, letters[j], a_next[i][j], a_mask[i][j]);
+	}
+}
 
 struct STATE
 {
@@ -351,6 +418,27 @@ struct DP_STATE
 	int node;
 };
 
+struct DP_VALUE
+{
+	LL cost;
+	int mx_len;
+	int sum;
+	int end_value;
+	int nxt;
+	DP_VALUE()
+	{
+		cost = 0;
+		mx_len = 0;
+		sum = 0;
+		end_value = 0;
+		nxt = -1;
+	}
+	void recalc_cost()
+	{
+		cost = (LL)end_value*1000000 + mx_len*1000 + sum;
+	}
+};
+
 bool operator< ( const DP_STATE & A, const DP_STATE & B )
 {
 	if (A.pivot != B.pivot) return A.pivot < B.pivot;
@@ -360,17 +448,42 @@ bool operator< ( const DP_STATE & A, const DP_STATE & B )
 	return A.node < B.node;
 }
 
-map< DP_STATE, PAR > Map;
+map< DP_STATE, DP_VALUE > Map;
 
-PAR get_dp( STATE & sta, DP_STATE dps )
+DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
+{
+	DP_STATE dps2 = dps;
+
+	dps2.pivot = sta.pivot;
+	dps2.rotate = sta.rotate;
+	if (move==0) dps2.from = 2;
+	if (move==1 || move==2)
+	{
+		dps2.from = 0;
+		dps2.rot_range = make_pair( dps2.rotate, dps2.rotate );
+	}
+	if (move==3) dps2.from = 1;
+	if (move==4)
+	{
+		dps2.rot_range.second = dps2.rotate;
+		dps2.from = 0;
+	}
+	if (move==5)
+	{
+		dps2.rot_range.first = dps2.rotate;
+		dps2.from = 0;
+	}
+
+	return dps2;
+}
+
+DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 {
 	if (Map.find(dps)!=Map.end()) return Map[dps];
 
-	PAR cur_dp = make_pair( 0, 0 );
-	FOR(a,0,35)
+	DP_VALUE v;
+	FOR(move,0,5)
 	{
-		int move = a/6;
-
 		bool flag = true;
 		if (move==0 && dps.from==1) flag = false;
 		if (move==3 && dps.from==2) flag = false;
@@ -382,6 +495,8 @@ PAR get_dp( STATE & sta, DP_STATE dps )
 				flag = false;
 			if (dps.rotate==dps.rot_range.first && dps.rot_range.first!=dps.rot_range.second)
 				flag = false;
+			if (sta.max_rotate==1)
+				flag = false;
 		}
 		if (move==5)
 		{
@@ -391,38 +506,68 @@ PAR get_dp( STATE & sta, DP_STATE dps )
 				flag = false;
 			if (dps.rotate==dps.rot_range.second && dps.rot_range.first!=dps.rot_range.second)
 				flag = false;
+			if (sta.max_rotate==1)
+				flag = false;
 		}
 
 		if (flag && sta.can_move( move ))
 		{
-			sta.do_move( a );
-			DP_STATE dps2 = dps;
-			dps2.pivot = sta.pivot;
-			dps2.rotate = sta.rotate;
-			if (move==0) dps2.from = 2;
-			if (move==1 || move==2)
-			{
-				dps2.from = 0;
-				dps2.rot_range = make_pair( dps2.rotate, dps2.rotate );
-			}
-			if (move==3) dps2.from = 1;
-			if (move==4)
-			{
-				dps2.rot_range.second++;
-				if (dps2.rot_range.second==sta.max_rotate) dps2.rot_range.second=0;
-				dps2.from = 0;
-			}
-			if (move==5)
-			{
-				dps2.rot_range.first--;
-				if (dps2.rot_range.first<0) dps2.rot_range.first=sta.max_rotate-1;
-				dps2.from = 0;
-			}
+			sta.do_move( move );
+			DP_STATE dps2 = do_dp_move( sta, dps, move );
 
-			PAR tmp = get_dp( sta, dps );
-			sta.undo_move( a );
+			FOR(c,0,5)
+			{
+				dps2.node = a_next[dps.node][move*6+c];
+
+				DP_VALUE tmp = get_dp( sta, dps2 );
+
+				int msk = a_mask[dps.node][move*6+c];
+				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+			}
+			sta.undo_move( move );
 		}
 	}
+	FOR(move,0,5)
+		if (!sta.can_move( move ))
+			FOR(c,0,5)
+			{
+				DP_VALUE tmp;
+				int msk = a_mask[dps.node][move*6+c];
+				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.end_value = sta.get_value();
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+			}
+	Map[dps] = v;
+	return v;
+}
+
+void calc_crazy_dp( STATE & sta, int starting_node )
+{
+	Map.clear();
+
+	DP_STATE dps;
+	dps.pivot = sta.pivot;
+	dps.rotate = sta.rotate;
+	dps.rot_range = make_pair( sta.rotate, sta.rotate );
+	dps.from = 0;
+	dps.node = starting_node;
+
+	get_dp( sta, dps );
 }
 
 set< pair< PAR, int > > Set;
@@ -522,7 +667,7 @@ vector<OUTPUT> sol_internal( const char *path )
 		OUTPUT out;
 		out.problemId = inp.id;
 		out.seed = inp.sourceSeeds[z];
-		out.tag = "bla";
+		out.tag = guten_tag;
 		out.solution = "";
 
 		FOR(a,0,inp.sourceLength-1)
@@ -533,7 +678,7 @@ vector<OUTPUT> sol_internal( const char *path )
 			unit_to_unit( inp.units[ind], pivot, unit );
 			if (!S.spawn_unit( pivot, unit )) break;
 			S.render();
-			calc_all_end_positions( S );
+			/*calc_all_end_positions( S );
 			int ends = SZ(end_pos);
 			int best = -1, best_value = -1;
 			FOR(b,0,ends-1)
@@ -544,11 +689,32 @@ vector<OUTPUT> sol_internal( const char *path )
 				}
 			ass( best>=0 );
 			S.do_commands( cmds[best] );
-			ass( S.get_value() == best_value );
+			ass( S.get_value() == best_value );*/
+			calc_crazy_dp( S, 0 );
+			DP_STATE dps;
+			dps.pivot = S.pivot;
+			dps.rotate = S.rotate;
+			dps.rot_range = make_pair( S.rotate, S.rotate );
+			dps.from = 0;
+			dps.node = 0;
+
+			while(1)
+			{
+				int nxt = Map[dps].nxt;
+				out.solution.push_back( letters[nxt] );
+				int move = nxt/6;
+				if (S.can_move( move ))
+					S.do_move( move );
+				else break;
+				DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
+				dps2.node = a_next[dps.node][nxt];
+				dps = dps2;
+			}
+
 			S.lock_unit();
 			S.render();
 
-			out.solution += cmds[best];
+			//out.solution += cmds[best];
 		}
 		answer.push_back( out );
 	}
@@ -566,7 +732,7 @@ void sol (int problem)
 	Json::Value data;
 	data = serializeJson( answer );
 	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_4.json", problem );
+	sprintf( path, "../solutions/solution_%d_%s.json", problem, guten_tag.c_str() );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
 	fclose( file_out );
@@ -578,10 +744,17 @@ int main(int argc, char** argv)
 	powerphrases = System::GetArgValues("p");
 	vector<string> files = System::GetArgValues("f");
 
-	FA(a,symb) move_by_chr[symbols[a]] = a/6;
+	FOR(a,0,35) move_by_chr[letters[a]] = a/6;
 
 	if (files.empty())
 	{
+		//powerphrases.push_back("abaed");
+		//powerphrases.push_back("aed");
+		powerphrases.push_back("ei!");
+
+		build_automata();
+		//print_automata();
+		//return 0;
 
 		freopen("input.txt","r",stdin);
 		freopen("output.txt","w",stdout);
@@ -589,10 +762,12 @@ int main(int argc, char** argv)
 		//serializeJson( TMP() );
 
 		quiet = true;
-		FOR(a,0,23) sol( a );
+		//FOR(a,0,23) sol( a );
+		sol( 1 );
 
 	} else {
 
+		build_automata();
 		quiet = true;
 		vector<OUTPUT> res, tmp;
 		//printf("%d\n", (int)files.size());
