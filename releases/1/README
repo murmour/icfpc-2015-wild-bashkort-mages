@@ -1,0 +1,18 @@
+ICFP Programming Contest 2015 submission by Team Bashkortostan.
+
+Authors:
+  Damir Akhmetzyanov (linesprower@gmail.com),
+  Maxim Mouratov (mmouratov@gmail.com),
+  Artem Ripatti (ripatti@inbox.ru).
+
+Target platform:
+  Ubuntu 14.04, x86-64.
+
+Build dependencies:
+  Stock GCC package (including g++).
+
+Build instructions:
+  Run 'make'.
+
+Algorithm description:
+  No time for now (it's the lightning round!). Perhaps in the next submission...
