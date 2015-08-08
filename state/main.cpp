@@ -78,11 +78,16 @@ void automata_dfs(int prev, string s0)
 		for (uint j = 0; j < powerphrases.size(); j++)
 		{
 			int plen = powerphrases[j].size();
+			int maxp = 0;
 			for (int le = 1; le <= s.size() && le <= plen; le++)
 			{
-				if (powerphrases[j].substr(0, le) == s.substr(s.size()-le, le)) lens[j] = le;
+				if (powerphrases[j].substr(0, le) == s.substr(s.size()-le, le))
+				{
+					if (le < plen) lens[j] = le;
+					maxp = le;
+				}
 			}
-			if (lens[j] == plen) mask |= (1 << j);
+			if (maxp == plen) mask |= (1 << j);
 		}
 		bool added = false;
 		int v = get_ver(lens, added);
@@ -602,8 +607,8 @@ int main(int argc, char** argv)
 		powerphrases.push_back("aed");
 
 		build_automata();
-		//print_automata();
-		//return 0;
+		print_automata();
+		return 0;
 
 		freopen("input.txt","r",stdin);
 		freopen("output.txt","w",stdout);
