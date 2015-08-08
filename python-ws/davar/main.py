@@ -418,9 +418,14 @@ class TileEditor(QtGui.QMainWindow):
         self.act_playb = cmn.Action(self, 'Play back (F4)', 'control-180.png', self.startPlayback, 'F4', checkable=True)
         self.act_play = cmn.Action(self, 'Play (F5)', 'play.png', self.startPlay, 'F5', checkable=True)
         self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'hand-point.png', self.gotoMove, 'F1')
+        self.act_togglefast = cmn.Action(self, 'Toggle fast', '', self.toggleFast, 'F8')
+        self.addAction(self.act_togglefast)
+        
+        self.fastcb = QtGui.QCheckBox('Fast(F8)')
+        self.fastcb.toggled.connect(self.onToggleFast)
         
         layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove), cmn.ToolBtn(self.act_prev), 
-                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play)])
+                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
         layout = cmn.VBox([layout, self.wi])
         self.setCentralWidget(cmn.ensureWidget(layout))
         
@@ -514,6 +519,14 @@ class TileEditor(QtGui.QMainWindow):
         if ok:
             self.setFrame(val-1)
     
+    def toggleFast(self):
+        self.fastcb.toggle()
+        
+    def onToggleFast(self):
+        inter = 10 if self.fastcb.isChecked() else 50
+        self.backup_timer.start(inter)
+        self.backup_timer2.start(inter)
+    
     def startGameInternal(self, seed):
         self.seed = seed
         self.cmds = ''
@@ -579,7 +592,7 @@ class TileEditor(QtGui.QMainWindow):
             sol = json.loads(f.read())
             
         if len(sol) > 1:
-            val, ok = QtGui.QInputDialog.getInt(self, 'Seed index', 'seed', 0)
+            val, ok = QtGui.QInputDialog.getInt(self, 'Seed index', 'seed (0-%d)' % (len(sol)-1), 0)
             if not ok:
                 return
             if val < 0 or val >= len(sol):
@@ -640,6 +653,7 @@ class TileEditor(QtGui.QMainWindow):
         self.act_prev.setEnabled(idx > 0)
         self.printFrames()
         self.update()
+        
     
     def doPlay(self):
         if self.act_play.isChecked():
