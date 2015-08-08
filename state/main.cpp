@@ -45,6 +45,72 @@ int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
 
+typedef unsigned int uint;
+const int MAX_VERS = 2000;
+int n_vers = 0;
+map<vector<int>, int> vers;
+const char letters[] = "p'!.03aghij4lmno 5bcefy2dqrvz1kstuwx";
+const int n_letters = sizeof(letters);
+
+int a_next[MAX_VERS][n_letters];
+int a_mask[MAX_VERS][n_letters];
+
+int get_ver(const vector<int> lens, bool &added)
+{
+	added = false;
+	if (vers.find(lens) != vers.end()) return vers[lens];
+	ass(n_vers < MAX_VERS);
+	vers[lens] = n_vers;
+	added = true;
+	n_vers++;
+	return vers[lens];
+}
+
+void automata_dfs(int prev, string s0)
+{
+	int n_words = powerphrases.size();
+	for (uint i = 0; i < n_letters; i++)
+	{
+		string s = s0 + letters[i];
+		int mask = 0;
+		// compute vector
+		vector<int> lens(n_words);
+		for (uint j = 0; j < powerphrases.size(); j++)
+		{
+			int plen = powerphrases[j].size();
+			for (int le = 1; le <= s.size() && le <= plen; le++)
+			{
+				if (powerphrases[j].substr(0, le) == s.substr(s.size()-le, le)) lens[j] = le;
+			}
+			if (lens[j] == plen) mask |= (1 << j);
+		}
+		bool added = false;
+		int v = get_ver(lens, added);
+		a_next[prev][i] = v;
+		a_mask[prev][i] = mask;
+		if (added) automata_dfs(v, s);
+	}
+}
+
+void build_automata()
+{
+	n_vers = 0;
+	vers.clear();
+	bool dummy;
+	int v = get_ver(vector<int>(powerphrases.size()), dummy);
+	automata_dfs(v, "");
+}
+
+void print_automata()
+{
+	printf("n_vers = %d\n", n_vers);
+	for (int i = 0; i < n_vers; i++)
+	{
+		for (int j = 0; j < n_letters; j++)
+			if (a_next[i][j] || a_mask[i][j])
+				printf("%d -%c-> %d (%d)\n", i, letters[j], a_next[i][j], a_mask[i][j]);
+	}
+}
 
 struct STATE
 {
@@ -531,6 +597,12 @@ int main(int argc, char** argv)
 
 	if (files.empty())
 	{
+		powerphrases.push_back("abaed");
+		powerphrases.push_back("aed");
+
+		build_automata();
+		//print_automata();
+		//return 0;
 
 		freopen("input.txt","r",stdin);
 		freopen("output.txt","w",stdout);
@@ -542,6 +614,7 @@ int main(int argc, char** argv)
 
 	} else {
 
+		build_automata();
 		quiet = true;
 		vector<OUTPUT> res, tmp;
 		//printf("%d\n", (int)files.size());
