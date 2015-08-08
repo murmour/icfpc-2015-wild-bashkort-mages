@@ -45,6 +45,14 @@ int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
 
+string symbols =
+	"p'!.03"
+	"aghij4"
+	"lmno 5"
+	"bcefy2"
+	"dqrvz1"
+	"kstuwx";
+
 
 struct STATE
 {
@@ -334,6 +342,89 @@ struct OUTPUT
 	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
 };
 
+struct DP_STATE
+{
+	PAR pivot;
+	int rotate;
+	PAR rot_range;
+	int from; // 0 - ?, 1 - left, 2 - right
+	int node;
+};
+
+bool operator< ( const DP_STATE & A, const DP_STATE & B )
+{
+	if (A.pivot != B.pivot) return A.pivot < B.pivot;
+	if (A.rotate != B.rotate) return A.rotate < B.rotate;
+	if (A.rot_range != B.rot_range) return A.rot_range < B.rot_range;
+	if (A.from != B.from) return A.from < B.from;
+	return A.node < B.node;
+}
+
+map< DP_STATE, PAR > Map;
+
+PAR get_dp( STATE & sta, DP_STATE dps )
+{
+	if (Map.find(dps)!=Map.end()) return Map[dps];
+
+	PAR cur_dp = make_pair( 0, 0 );
+	FOR(a,0,35)
+	{
+		int move = a/6;
+
+		bool flag = true;
+		if (move==0 && dps.from==1) flag = false;
+		if (move==3 && dps.from==2) flag = false;
+		if (move==4)
+		{
+			int r = dps.rotate+1;
+			if (r==sta.max_rotate) r=0;
+			if (r==dps.rot_range.first || r==dps.rot_range.second)
+				flag = false;
+			if (dps.rotate==dps.rot_range.first && dps.rot_range.first!=dps.rot_range.second)
+				flag = false;
+		}
+		if (move==5)
+		{
+			int r = dps.rotate-1;
+			if (r<0) r=dps.rotate-1;
+			if (r==dps.rot_range.first || r==dps.rot_range.second)
+				flag = false;
+			if (dps.rotate==dps.rot_range.second && dps.rot_range.first!=dps.rot_range.second)
+				flag = false;
+		}
+
+		if (flag && sta.can_move( move ))
+		{
+			sta.do_move( a );
+			DP_STATE dps2 = dps;
+			dps2.pivot = sta.pivot;
+			dps2.rotate = sta.rotate;
+			if (move==0) dps2.from = 2;
+			if (move==1 || move==2)
+			{
+				dps2.from = 0;
+				dps2.rot_range = make_pair( dps2.rotate, dps2.rotate );
+			}
+			if (move==3) dps2.from = 1;
+			if (move==4)
+			{
+				dps2.rot_range.second++;
+				if (dps2.rot_range.second==sta.max_rotate) dps2.rot_range.second=0;
+				dps2.from = 0;
+			}
+			if (move==5)
+			{
+				dps2.rot_range.first--;
+				if (dps2.rot_range.first<0) dps2.rot_range.first=sta.max_rotate-1;
+				dps2.from = 0;
+			}
+
+			PAR tmp = get_dp( sta, dps );
+			sta.undo_move( a );
+		}
+	}
+}
+
 set< pair< PAR, int > > Set;
 vector< pair< PAR, int > > end_pos;
 vector< int > values;
@@ -462,40 +553,7 @@ vector<OUTPUT> sol_internal( const char *path )
 		answer.push_back( out );
 	}
 
-	/*Json::FastWriter fw;
-	data = serializeJson( answer );
-	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
-	FILE * file_out = fopen( path, "w" );
-	fprintf( file_out, "%s", res.c_str() );
-	fclose( file_out );*/
-
 	return answer;
-
-	/*S.init( 10, 10 );
-	S.board[9][1] = true;
-	S.board[8][6] = true;
-	S.board[9][6] = true;
-
-	PAR pi = make_pair( 0, 0 );
-	vector< PAR > un;
-	//un.push_back( make_pair( 0, 0 ) );
-	un.push_back( make_pair( 0, 1 ) );
-	un.push_back( make_pair( 1, 1 ) );
-	un.push_back( make_pair( 2, 2 ) );
-	un.push_back( make_pair( 3, 2 ) );
-	S.spawn_unit( pi, un );
-
-	S.render();
-
-	calc_all_end_positions( S );
-
-	cout << SZ(end_pos) << "\n";
-	FA(a,end_pos)
-	{
-		cout << end_pos[a].first.X << " " << end_pos[a].first.Y << " " << end_pos[a].second << " ";
-		cout << cmds[a] << "\n";
-	}*/
 }
 
 void sol (int problem)
@@ -520,14 +578,7 @@ int main(int argc, char** argv)
 	powerphrases = System::GetArgValues("p");
 	vector<string> files = System::GetArgValues("f");
 
-	string symb =
-		"p'!.03"
-		"aghij4"
-		"lmno 5"
-		"bcefy2"
-		"dqrvz1"
-		"kstuwx";
-	FA(a,symb) move_by_chr[symb[a]] = a/6;
+	FA(a,symb) move_by_chr[symbols[a]] = a/6;
 
 	if (files.empty())
 	{
