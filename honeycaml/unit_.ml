@@ -2,7 +2,7 @@
 open Batteries
 
 
-type t = Game_t.unit_
+type t = Js_Game_t.unit_
 
 
 let rotate (u: t) dir : t =
@@ -25,3 +25,8 @@ let calc_max_rot (u: t) =
       iter (rotate u' CW) (count + 1)
   in
   iter (rotate u CW) 1
+
+let gen_source (l: t list) ~seed ~len =
+  let arr = Array.of_list l in
+  List.of_enum @@ Enum.take len @@ (Rng.enum ~seed |> Enum.map (fun rand ->
+    arr.(rand mod (Array.length arr))))

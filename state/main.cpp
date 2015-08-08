@@ -41,9 +41,18 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
+string guten_tag = "rip_5";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
+
+/*string symbols =
+	"p'!.03"
+	"aghij4"
+	"lmno 5"
+	"bcefy2"
+	"dqrvz1"
+	"kstuwx";*/
 
 typedef unsigned int uint;
 const int MAX_VERS = 2000;
@@ -78,8 +87,9 @@ void automata_dfs(int prev, string s0)
 		for (uint j = 0; j < powerphrases.size(); j++)
 		{
 			int plen = powerphrases[j].size();
+
 			int maxp = 0;
-			for (int le = 1; le <= s.size() && le <= plen; le++)
+			for (int le = 1; le <= (int)s.size() && le <= plen; le++)
 			{
 				if (powerphrases[j].substr(0, le) == s.substr(s.size()-le, le))
 				{
@@ -406,6 +416,167 @@ struct OUTPUT
 	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
 };
 
+struct DP_STATE
+{
+	PAR pivot;
+	int rotate;
+	PAR rot_range;
+	int from; // 0 - ?, 1 - left, 2 - right
+	int node;
+};
+
+struct DP_VALUE
+{
+	LL cost;
+	int mx_len;
+	int sum;
+	int end_value;
+	int nxt;
+	DP_VALUE()
+	{
+		cost = 0;
+		mx_len = 0;
+		sum = 0;
+		end_value = 0;
+		nxt = -1;
+	}
+	void recalc_cost()
+	{
+		cost = (LL)end_value*1000000 + mx_len*1000 + sum;
+	}
+};
+
+bool operator< ( const DP_STATE & A, const DP_STATE & B )
+{
+	if (A.pivot != B.pivot) return A.pivot < B.pivot;
+	if (A.rotate != B.rotate) return A.rotate < B.rotate;
+	if (A.rot_range != B.rot_range) return A.rot_range < B.rot_range;
+	if (A.from != B.from) return A.from < B.from;
+	return A.node < B.node;
+}
+
+map< DP_STATE, DP_VALUE > Map;
+
+DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
+{
+	DP_STATE dps2 = dps;
+
+	dps2.pivot = sta.pivot;
+	dps2.rotate = sta.rotate;
+	if (move==0) dps2.from = 2;
+	if (move==1 || move==2)
+	{
+		dps2.from = 0;
+		dps2.rot_range = make_pair( dps2.rotate, dps2.rotate );
+	}
+	if (move==3) dps2.from = 1;
+	if (move==4)
+	{
+		dps2.rot_range.second = dps2.rotate;
+		dps2.from = 0;
+	}
+	if (move==5)
+	{
+		dps2.rot_range.first = dps2.rotate;
+		dps2.from = 0;
+	}
+
+	return dps2;
+}
+
+DP_VALUE get_dp( STATE & sta, DP_STATE dps )
+{
+	if (Map.find(dps)!=Map.end()) return Map[dps];
+
+	DP_VALUE v;
+	FOR(move,0,5)
+	{
+		bool flag = true;
+		if (move==0 && dps.from==1) flag = false;
+		if (move==3 && dps.from==2) flag = false;
+		if (move==4)
+		{
+			int r = dps.rotate+1;
+			if (r==sta.max_rotate) r=0;
+			if (r==dps.rot_range.first || r==dps.rot_range.second)
+				flag = false;
+			if (dps.rotate==dps.rot_range.first && dps.rot_range.first!=dps.rot_range.second)
+				flag = false;
+			if (sta.max_rotate==1)
+				flag = false;
+		}
+		if (move==5)
+		{
+			int r = dps.rotate-1;
+			if (r<0) r=dps.rotate-1;
+			if (r==dps.rot_range.first || r==dps.rot_range.second)
+				flag = false;
+			if (dps.rotate==dps.rot_range.second && dps.rot_range.first!=dps.rot_range.second)
+				flag = false;
+			if (sta.max_rotate==1)
+				flag = false;
+		}
+
+		if (flag && sta.can_move( move ))
+		{
+			sta.do_move( move );
+			DP_STATE dps2 = do_dp_move( sta, dps, move );
+
+			FOR(c,0,5)
+			{
+				dps2.node = a_next[dps.node][move*6+c];
+
+				DP_VALUE tmp = get_dp( sta, dps2 );
+
+				int msk = a_mask[dps.node][move*6+c];
+				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+			}
+			sta.undo_move( move );
+		}
+	}
+	FOR(move,0,5)
+		if (!sta.can_move( move ))
+			FOR(c,0,5)
+			{
+				DP_VALUE tmp;
+				int msk = a_mask[dps.node][move*6+c];
+				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.end_value = sta.get_value();
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+			}
+	Map[dps] = v;
+	return v;
+}
+
+void calc_crazy_dp( STATE & sta, int starting_node )
+{
+	Map.clear();
+
+	DP_STATE dps;
+	dps.pivot = sta.pivot;
+	dps.rotate = sta.rotate;
+	dps.rot_range = make_pair( sta.rotate, sta.rotate );
+	dps.from = 0;
+	dps.node = starting_node;
+
+	get_dp( sta, dps );
+}
+
 set< pair< PAR, int > > Set;
 vector< pair< PAR, int > > end_pos;
 vector< int > values;
@@ -503,7 +674,7 @@ vector<OUTPUT> sol_internal( const char *path )
 		OUTPUT out;
 		out.problemId = inp.id;
 		out.seed = inp.sourceSeeds[z];
-		out.tag = "bla";
+		out.tag = guten_tag;
 		out.solution = "";
 
 		FOR(a,0,inp.sourceLength-1)
@@ -514,7 +685,7 @@ vector<OUTPUT> sol_internal( const char *path )
 			unit_to_unit( inp.units[ind], pivot, unit );
 			if (!S.spawn_unit( pivot, unit )) break;
 			S.render();
-			calc_all_end_positions( S );
+			/*calc_all_end_positions( S );
 			int ends = SZ(end_pos);
 			int best = -1, best_value = -1;
 			FOR(b,0,ends-1)
@@ -525,49 +696,37 @@ vector<OUTPUT> sol_internal( const char *path )
 				}
 			ass( best>=0 );
 			S.do_commands( cmds[best] );
-			ass( S.get_value() == best_value );
+			ass( S.get_value() == best_value );*/
+			calc_crazy_dp( S, 0 );
+			DP_STATE dps;
+			dps.pivot = S.pivot;
+			dps.rotate = S.rotate;
+			dps.rot_range = make_pair( S.rotate, S.rotate );
+			dps.from = 0;
+			dps.node = 0;
+
+			while(1)
+			{
+				int nxt = Map[dps].nxt;
+				out.solution.push_back( letters[nxt] );
+				int move = nxt/6;
+				if (S.can_move( move ))
+					S.do_move( move );
+				else break;
+				DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
+				dps2.node = a_next[dps.node][nxt];
+				dps = dps2;
+			}
+
 			S.lock_unit();
 			S.render();
 
-			out.solution += cmds[best];
+			//out.solution += cmds[best];
 		}
 		answer.push_back( out );
 	}
 
-	/*Json::FastWriter fw;
-	data = serializeJson( answer );
-	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
-	FILE * file_out = fopen( path, "w" );
-	fprintf( file_out, "%s", res.c_str() );
-	fclose( file_out );*/
-
 	return answer;
-
-	/*S.init( 10, 10 );
-	S.board[9][1] = true;
-	S.board[8][6] = true;
-	S.board[9][6] = true;
-
-	PAR pi = make_pair( 0, 0 );
-	vector< PAR > un;
-	//un.push_back( make_pair( 0, 0 ) );
-	un.push_back( make_pair( 0, 1 ) );
-	un.push_back( make_pair( 1, 1 ) );
-	un.push_back( make_pair( 2, 2 ) );
-	un.push_back( make_pair( 3, 2 ) );
-	S.spawn_unit( pi, un );
-
-	S.render();
-
-	calc_all_end_positions( S );
-
-	cout << SZ(end_pos) << "\n";
-	FA(a,end_pos)
-	{
-		cout << end_pos[a].first.X << " " << end_pos[a].first.Y << " " << end_pos[a].second << " ";
-		cout << cmds[a] << "\n";
-	}*/
 }
 
 void sol (int problem)
@@ -580,7 +739,7 @@ void sol (int problem)
 	Json::Value data;
 	data = serializeJson( answer );
 	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_4.json", problem );
+	sprintf( path, "../solutions/solution_%d_%s.json", problem, guten_tag.c_str() );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
 	fclose( file_out );
@@ -592,23 +751,18 @@ int main(int argc, char** argv)
 	powerphrases = System::GetArgValues("p");
 	vector<string> files = System::GetArgValues("f");
 
-	string symb =
-		"p'!.03"
-		"aghij4"
-		"lmno 5"
-		"bcefy2"
-		"dqrvz1"
-		"kstuwx";
-	FA(a,symb) move_by_chr[symb[a]] = a/6;
+	FOR(a,0,35) move_by_chr[letters[a]] = a/6;
 
 	if (files.empty())
 	{
-		powerphrases.push_back("abaed");
-		powerphrases.push_back("aed");
+		//powerphrases.push_back("abaed");
+		//powerphrases.push_back("aed");
+		powerphrases.push_back("ei!");
+		powerphrases.push_back("ia! ia!");
 
 		build_automata();
-		print_automata();
-		return 0;
+		//print_automata();
+		//return 0;
 
 		freopen("input.txt","r",stdin);
 		freopen("output.txt","w",stdout);
@@ -616,8 +770,10 @@ int main(int argc, char** argv)
 		//serializeJson( TMP() );
 
 		quiet = true;
-		FOR(a,0,23) sol( a );
+		//FOR(a,0,23) sol( a );
+		sol( 1 );
 
+		cerr << clock() << "\n";
 	} else {
 
 		build_automata();

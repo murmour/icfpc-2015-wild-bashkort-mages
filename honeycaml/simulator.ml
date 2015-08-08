@@ -10,23 +10,13 @@ type t =
     score: int;
   }
 
-type unit_ = Game_t.unit_
-
 type focus =
   {
     ctx: t;
-    unit: unit_;
+    unit: Unit_.t;
     rot: int;
     max_rot: int;
   }
-
-type command =
-  | MoveE
-  | MoveW
-  | MoveSE
-  | MoveSW
-  | TurnCW
-  | TurnCCW
 
 
 let make ~width ~height ~filled =
@@ -39,7 +29,7 @@ let make ~width ~height ~filled =
     score = 0;
   }
 
-let add_unit (ctx: t) (u: unit_) ~max_rot : [ `Focus of focus | `End ] =
+let add_unit (ctx: t) (u: Unit_.t) ~max_rot : [ `Focus of focus | `End ] =
   let min_y = ref max_int in
   let min_x = ref max_int in
   let max_x = ref min_int in
@@ -64,10 +54,10 @@ let add_unit (ctx: t) (u: unit_) ~max_rot : [ `Focus of focus | `End ] =
       else
         Return.return lab `End)
     in
-    let unit: unit_ = { members; pivot = move_cell u.pivot } in
+    let unit: Unit_.t = { members; pivot = move_cell u.pivot } in
     `Focus { ctx; unit; rot = 0; max_rot })
 
-let command focus command : [ `Focus of focus | `Ready of t | `End ] =
+let act focus command : [ `Focus of focus | `Ready of t | `End ] =
   failwith "todo"
 
 let get_score board =
