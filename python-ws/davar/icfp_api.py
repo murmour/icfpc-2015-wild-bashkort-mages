@@ -103,11 +103,10 @@ def score_all_solutions(solver, version):
 
 def score_and_mark_all_solutions(solver, version):
     def action(f, scores, pscores):
-        sol = None
         with io.open(f['fname'], 'r') as h:
             sol = json.loads(h.read())
         with io.open(f['fname'], 'w') as h:
-            for i, x in enumerate(scores):
+            for i, v in enumerate(scores):
                 sol[i]['score'] = scores[i]
                 sol[i]['pscore'] = pscores[i]
             h.write(json.dumps(sol))
