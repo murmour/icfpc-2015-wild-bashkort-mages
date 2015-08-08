@@ -13,14 +13,14 @@ team_id = 42
 team_token = ":C0x3lXwXH12jFaTOA1LEKRHycE9aeXAsaAmm8UPFlPE="
 
 
-def send_solution(fname) -> bool:
-    print('Sending %s...' % fname)
+def send_solution(f) -> bool:
+    print('Sending %s...' % f['fname'])
     res = subprocess.call(
         ["curl",
          "--user", team_token,
          "-X", "POST",
          "-H", "Content-Type: application/json",
-         "--data", '@' + fname,
+         "--data", '@' + f['fname'],
          "https://davar.icfpcontest.org/teams/%s/solutions" % team_id ])
     print()
     return (res == 0)
