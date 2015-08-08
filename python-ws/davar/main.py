@@ -7,6 +7,7 @@ Created on Aug 7, 2015
 from PyQt4 import QtGui, QtCore
 import json, sys, copy, os
 import io#, time
+import re
 import common as cmn
 
 fname = '../../qualifier-problems/problem_%d.json'
@@ -58,7 +59,27 @@ class Frame:
     def __init__(self, cells, state):
         self.cells = copy.deepcopy(cells)
         self.state = copy.deepcopy(state)        
+
+
+class InfoPanel(QtGui.QDockWidget):
     
+    def __init__(self, owner):
+        
+        QtGui.QDockWidget.__init__(self, ' Solution info')
+        
+        self.owner = owner
+        self.setObjectName('info_panel') # for state saving        
+                
+        e = QtGui.QTextEdit()
+        e.setFont(QtGui.QFont('Consolas', 10))
+        e.setReadOnly(True)
+        self.e = e
+        self.setWidget(e)
+        
+        self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+    
+    def setData(self, text):
+        self.e.setPlainText(text)        
 
 class TileWidget(QtGui.QWidget):
     
@@ -310,15 +331,7 @@ class UnitsPanel(QtGui.QDockWidget):
         QtGui.QDockWidget.__init__(self, ' Units')
         
         self.owner = owner
-        self.setObjectName('object_creator') # for state saving
-        
-        #self.cbx = QtGui.QComboBox()        
-        #self.wi = TileWidget(self)
-        
-        #self.cbx.currentIndexChanged.connect(self.onChanged)        
-        
-        #layout = cmn.VBox([self.cbx, self.wi])          
-        #self.setWidget(cmn.ensureWidget(layout))
+        self.setObjectName('object_creator') # for state saving        
         
         self.setWidget(QtGui.QWidget())
         self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
@@ -430,6 +443,8 @@ class TileEditor(QtGui.QMainWindow):
         
         self.units_list = UnitsPanel(self)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.units_list)        
+        self.info_box = InfoPanel(self)
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_box)
         
         
         s = QtCore.QSettings('PlatBox', 'Davar')
@@ -485,8 +500,9 @@ class TileEditor(QtGui.QMainWindow):
         self.cbx.addItems([str(i) for i in range(N_PROBLEMS)])
         
         if self.solname:                
-            self.show() 
-            self.showSol()
+            self.show()
+            if self.solname != '$$$': 
+                self.showSol()
     
     def loadpowers(self):
         with io.open('../../power-words.txt') as f:
@@ -672,7 +688,36 @@ class TileEditor(QtGui.QMainWindow):
             if not self.doCommandInternalx(history, c):
                 print('Cannot spawn after %d' % i)
                 break
-                
+            
+        #info = ''
+        score = self.frames[-1].state.score
+        pscore = self.frames[-1].state.pscore
+        info = 'score = %d (%d + %d)' % (score + pscore, score, pscore)
+        
+        pscore2 = 0
+        
+        pwords = []
+        for s in self.powerwords:
+            pos = 0
+            cnt = 0
+            while True:
+                pos = self.cmds.find(s, pos)
+                if pos == -1:
+                    break
+                cnt += 1
+                pos = pos + 1
+            if cnt:
+                pwords.append('%s (%d)' % (s, cnt))
+                pscore2 += 300 + 2 * len(s) * cnt
+        info += '\npowerwords: %s' % ', '.join(pwords)
+        used = self.frames[-1].state.unit_idx
+        stock = self.data['sourceLength']
+        info += '\nused %d of %d' % (used, stock)
+        if used < stock:
+            info += ' CONGESTION!!!'
+                 
+        self.info_box.setData(info)        
+        assert(pscore == pscore2)
         self.setFrame(0) 
 
     def nextFrame0(self):
@@ -768,7 +813,7 @@ def main():
     
     #return
     app = QtGui.QApplication(sys.argv)
-    fname = 'test.json'
+    fname = '$$$'
     if len(sys.argv) > 1:
         fname = sys.argv[1]    
     _ = TileEditor(fname)
