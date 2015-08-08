@@ -1,3 +1,6 @@
+# this is a comment
+# every power phrase in a single line
+# these are used by the visualizer
 ei!
 yuggoth
 ia! ia!

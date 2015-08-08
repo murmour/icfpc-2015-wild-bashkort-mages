@@ -94,6 +94,7 @@ void automata_dfs(int prev, string s0)
 
 void build_automata()
 {
+	ass( powerphrases.size() <= 31 );
 	n_vers = 0;
 	vers.clear();
 	bool dummy;
