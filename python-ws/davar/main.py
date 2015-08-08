@@ -12,6 +12,8 @@ import common as cmn
 fname = '../../qualifier-problems/problem_%d.json'
 
 SIZE = 25
+N_PROBLEMS = 25 
+MAX_PLEN = 50
 
 def unp_cell(cell):
     return cell['x'], cell['y']
@@ -41,6 +43,9 @@ class State:
         self.unit_idx = unit_idx # index of the next unit to put
         self.score = score
         self.ls_old = ls_old
+        self.pscore = 0
+        self.usedp = set()
+        self.pvisual = ''
         
     def __str__(self):
         return str((self.cur_unit, self.unit_idx, self.score, self.ls_old))
@@ -220,6 +225,17 @@ class TileWidget2(QtGui.QWidget):
             self.cells[ ce['y'] ][ ce['x'] ] = 1
         self.state = State(None, 0, 0, 0)        
     
+    def updatePower(self, history, pwords):
+        #print(history)
+        self.state.pvisual = ''
+        for pw in pwords:
+            if history.endswith(pw):
+                if not pw in self.state.usedp:
+                    self.state.usedp.add(pw)
+                    self.state.pscore += 300
+                self.state.pscore += 2 * len(pw)
+                self.state.pvisual += pw
+    
     def lockUnit(self):
         for x, y in self.state.cur_unit.members:
             self.cells[y][x] = 1
@@ -262,6 +278,16 @@ class TileWidget2(QtGui.QWidget):
             p.setBrush(QtGui.QColor('gray'))
             dx = SIZE // 2 if y % 2 == 1 else 0
             p.drawEllipse(QtCore.QPoint(dx + x * SIZE + SIZE // 2, y * SIZE * 42 // 50 + SIZE // 2), 5, 5)
+        
+        def draw_text(x, y, s):
+            font = p.font()
+            font.setPixelSize(50)
+            p.setFont(font)
+            #p.setBrush(QtGui.QColor('lightgreen'))
+            p.setPen(QtGui.QColor('green'))
+            dx = SIZE // 2 if y % 2 == 1 else 0
+            p.drawText(QtCore.QPoint(dx + x * SIZE + SIZE // 2, y * SIZE * 42 // 50 + SIZE // 2), s)
+            p.setPen(QtGui.QColor('gray'))            
             
         for i in range(self.h):            
             for j in range(self.w):
@@ -270,7 +296,11 @@ class TileWidget2(QtGui.QWidget):
         if self.state.cur_unit:
             for x, y in self.state.cur_unit.members:
                 draw_cell(x, y, 'red')
-            draw_pivot(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1])                
+            draw_pivot(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1])
+            
+        if self.state.pvisual:
+            draw_text(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1], self.state.pvisual)
+                        
 
 
 class UnitsPanel(QtGui.QDockWidget):
@@ -389,7 +419,8 @@ class TileEditor(QtGui.QMainWindow):
     def __init__(self, solname):
         QtGui.QMainWindow.__init__(self)
         
-        self.solname = solname        
+        self.solname = solname
+        self.loadpowers()
         
         #self.img = QtGui.QImage(self.w * 50, self.h * 50,
         #                        QtGui.QImage.Format_ARGB32)
@@ -446,11 +477,19 @@ class TileEditor(QtGui.QMainWindow):
         self.backup_timer2.start(50)
         
         self.cbx.currentIndexChanged.connect(self.onChanged)
-        self.cbx.addItems([str(i) for i in range(24)])
+        self.cbx.addItems([str(i) for i in range(N_PROBLEMS)])
         
         if self.solname:                
             self.show() 
             self.showSol()
+    
+    def loadpowers(self):
+        with io.open('../../power-words.txt') as f:
+            x = f.read().split('\n')
+            self.powerwords = list(set([s for s in x if not s.startswith('#') and s.strip()]))
+        for s in self.powerwords:
+            assert(len(s) <= MAX_PLEN)
+        #print(self.powerwords)
     
     def calcScore(self, fname):
         with io.open(fname, 'r') as f:
@@ -475,7 +514,8 @@ class TileEditor(QtGui.QMainWindow):
             for i, c in enumerate(self.cmds):
                 #print(c)
                 try:
-                    if not self.doCommandInternal(c, True):
+                    history = self.cmds[max(0, i-MAX_PLEN) : i]
+                    if not self.doCommandInternalx(history, c, True):
                         print('Cannot spawn after %d' % i)
                         break
                 except:
@@ -484,7 +524,7 @@ class TileEditor(QtGui.QMainWindow):
             
             #print(len(self.frames))
             #self.setFrame(0)
-            res.append(self.wi.state.score)
+            res.append((self.wi.state.score, self.wi.state.pscore))
         return res
     
     def startPlay(self):
@@ -561,14 +601,17 @@ class TileEditor(QtGui.QMainWindow):
         self.printFrames()
         
         self.cmds = self.cmds[0 : self.cur_frame]
-        
-        self.doCommandInternal(letter) 
+
+        history = self.cmds
+        if len(history) > MAX_PLEN:
+            history = history[-MAX_PLEN:]                
+        self.doCommandInternalx(history, letter) 
         #print(self.cmds)
         self.cmds = self.cmds + letter
         self.printFrames()
         self.setFrame(self.cur_frame+1)
     
-    def doCommandInternal(self, letter, no_frame=False):
+    def doCommandInternalx(self, history, letter, no_frame=False):
         c = cmd_lets[letter]        
         
         self.printFrames()
@@ -581,6 +624,8 @@ class TileEditor(QtGui.QMainWindow):
             if self.wi.state.unit_idx < len(self.seq):
                 if not self.wi.placeUnit(self.seq, self.units):
                     res = False
+        self.wi.updatePower(history + letter, self.powerwords)
+        
         
         #print('???')
         if not no_frame:
@@ -618,7 +663,8 @@ class TileEditor(QtGui.QMainWindow):
         print('%d commands' % len(self.cmds))
         for i, c in enumerate(self.cmds):
             #print(c)
-            if not self.doCommandInternal(c):
+            history = self.cmds[max(0, i-MAX_PLEN) : i]
+            if not self.doCommandInternalx(history, c):
                 print('Cannot spawn after %d' % i)
                 break
                 
@@ -648,7 +694,9 @@ class TileEditor(QtGui.QMainWindow):
         unit_idx = self.frames[idx].state.unit_idx
         unit_ty = -1 if unit_idx >= len(self.seq) else self.seq[unit_idx] % len(self.units)
         score = self.frames[idx].state.score
-        self.frame_lbl.setText('%d/%d - %d(%d) | %d' % (idx+1, n_frames, unit_idx, unit_ty, score))
+        pscore = self.frames[idx].state.pscore
+        totscore = score + pscore
+        self.frame_lbl.setText('%d/%d - %d(%d) | %d(%d+%d)' % (idx+1, n_frames, unit_idx, unit_ty, totscore, score, pscore))
         self.act_next.setEnabled(idx + 1 < n_frames)
         self.act_prev.setEnabled(idx > 0)
         self.printFrames()

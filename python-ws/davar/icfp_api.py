@@ -58,14 +58,17 @@ def send_all_solutions(solver, version):
 def score_all_solutions(solver, version):
     filtered = filter_solutions(solver, version)
     total = 0
+    totalp = 0
     with io.open('log_%s_%d.txt' % (solver, version), 'w') as log:
         for f, ident in filtered:
-            scores = mm.getScore(f)
-            msg = 'Id = %d %d %s' % (ident, sum(scores), scores)
+            scores0 = mm.getScore(f)
+            scores, pscores = zip(*scores0)
+            msg = 'Id = %d %d %d %s' % (ident, sum(scores) // len(scores), sum(pscores) // len(scores), scores0)
             print(msg)
             log.write(msg + '\n')
             total += sum(scores) / len(scores)
-        msg = 'Total = %.2f' % total
+            totalp += sum(pscores) / len(scores)
+        msg = 'Total = %.2f (%.2f + %.2f)' % (total + totalp, total, totalp)
         print(msg)
         log.write(msg + '\n')
 
