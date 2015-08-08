@@ -12,6 +12,7 @@ import common as cmn
 fname = '../../qualifier-problems/problem_%d.json'
 
 SIZE = 25
+N_PROBLEMS = 25 
 
 def unp_cell(cell):
     return cell['x'], cell['y']
@@ -446,7 +447,7 @@ class TileEditor(QtGui.QMainWindow):
         self.backup_timer2.start(50)
         
         self.cbx.currentIndexChanged.connect(self.onChanged)
-        self.cbx.addItems([str(i) for i in range(24)])
+        self.cbx.addItems([str(i) for i in range(N_PROBLEMS)])
         
         if self.solname:                
             self.show() 
