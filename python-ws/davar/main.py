@@ -31,6 +31,29 @@ class Unit:
     
     def __str__(self):
         return '%s | %s' % (str(self.pivot), str(self.members))
+    
+    def __repr__(self):
+        return self.__str__()
+
+class State:
+    def __init__(self, cur_unit, unit_idx, score, ls_old):
+        self.cur_unit = cur_unit
+        self.unit_idx = unit_idx # index of the next unit to put
+        self.score = score
+        self.ls_old = ls_old
+        
+    def __str__(self):
+        return str((self.cur_unit, self.unit_idx, self.score, self.ls_old))
+    
+    def __repr__(self):
+        return self.__str__()
+    
+
+class Frame:
+    def __init__(self, cells, state):
+        self.cells = copy.deepcopy(cells)
+        self.state = copy.deepcopy(state)        
+    
 
 class TileWidget(QtGui.QWidget):
     
@@ -69,30 +92,31 @@ class TileWidget(QtGui.QWidget):
         dx = SIZE // 2 if i % 2 == 1 else 0
         p.drawEllipse(QtCore.QPoint(dx + j * SIZE + SIZE // 2, i * SIZE * 42 // 50 + SIZE // 2), 5, 5)
         
+
+
     
 class TileWidget2(QtGui.QWidget):
     
     def __init__(self, owner):
         QtGui.QWidget.__init__(self)
         self.owner = owner
-        self.h = None
-        self.cur_unit = None
+        self.h = None        
+        self.state = None        
+        
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
     
     def setData(self, data, h, w):
         self.h = h
         self.w = w 
         self.init_data = data
-        self.initPos()
-        self.cur_unit = None
+        self.initPos()        
                 
     def keyPressEvent(self, ev):
         if ev.key() in qt_keys:
             self.owner.doCommand(qt_keys[ev.key()])
             
-            
     def canMove(self, move):
-        pivot = self.cur_unit.pivot
+        pivot = self.state.cur_unit.pivot
         def f(p):            
             if move <= 3:
                 res = self.move_pnt(p, move, 1)
@@ -109,7 +133,7 @@ class TileWidget2(QtGui.QWidget):
                 return False
             return True
         
-        return cmn.allF(self.cur_unit.members, f)        
+        return cmn.allF(self.state.cur_unit.members, f)
     
     def move_pnt(self, p, dir, d):
         if d < 0:
@@ -154,7 +178,7 @@ class TileWidget2(QtGui.QWidget):
         return x, y    
     
     def doMove(self, move):        
-        pivot = self.cur_unit.pivot
+        pivot = self.state.cur_unit.pivot
         def f(p):
             if move <= 3:
                 return self.move_pnt(p, move, 1)
@@ -164,9 +188,11 @@ class TileWidget2(QtGui.QWidget):
                 p_end = self.move_pnt(p_end, 4 if move == 4 else 0, pivot[1] - p[1])
                 p_end = self.move_pnt(p_end, 5 if move == 4 else 1, p1[0] - p[0])
                 return p_end
-        self.cur_unit = Unit(f(pivot), [f(x) for x in self.cur_unit.members])        
+        self.state.cur_unit = Unit(f(pivot), [f(x) for x in self.state.cur_unit.members])        
     
-    def placeUnit(self, unit):        
+    def placeUnit(self, seq, units):
+        assert(self.state.unit_idx < len(seq))
+        unit = units[seq[self.state.unit_idx]]        
         mi = min([ t[1] for t in unit.members ])
         unit = Unit( self.move_pnt(unit.pivot, 5, mi), [ self.move_pnt(p, 5, mi) for p in unit.members ] )
         mi = min( t[0] for t in unit.members )
@@ -175,9 +201,13 @@ class TileWidget2(QtGui.QWidget):
         unit = Unit( self.move_pnt(unit.pivot, 3, d), [ self.move_pnt(p, 3, d) for p in unit.members ] )
         
         for x, y in unit.members:
-            assert(not self.cells[y][x])
+            if self.cells[y][x]:
+            #assert(not self.cells[y][x])
+                return False
         
-        self.cur_unit = unit
+        self.state.cur_unit = unit
+        self.state.unit_idx += 1
+        return True
         #print(d)
         #print(unit)
         #return unit
@@ -187,12 +217,36 @@ class TileWidget2(QtGui.QWidget):
             return
         self.cells = [[0] * self.w for _ in range(self.h)]
         for ce in self.init_data:
-            self.cells[ ce['y'] ][ ce['x'] ] = 1        
+            self.cells[ ce['y'] ][ ce['x'] ] = 1
+        self.state = State(None, 0, 0, 0)        
     
     def lockUnit(self):
-        for x, y in self.cur_unit.members:
+        for x, y in self.state.cur_unit.members:
             self.cells[y][x] = 1
-        self.cur_unit = None
+            
+        # collapse here
+        new_cells = [row for row in self.cells if not cmn.allF(row, lambda x: x == 1)]
+        size = len(self.state.cur_unit.members)
+        ls = self.h - len(new_cells)
+        if ls > 0:
+            new_cells = [[0] * self.w for _ in range(ls)] + new_cells
+            self.cells = new_cells
+        ls_old = self.state.ls_old
+        
+        '''
+        move_score = points + line_bonus
+          where
+          points = size + 100 * (1 + ls) * ls / 2
+          line_bonus  = if ls_old > 1
+                        then floor ((ls_old - 1) * points / 10)
+                        else 0
+        '''
+        points = size + 100 * (1 + ls) * ls // 2
+        if ls_old > 1:
+            points += (ls_old - 1) * points // 10
+        self.state.cur_unit = None
+        self.state.ls_old = ls
+        self.state.score += points
     
     def paintEvent(self, ev):
         if not self.h:
@@ -213,10 +267,10 @@ class TileWidget2(QtGui.QWidget):
             for j in range(self.w):
                 draw_cell(j, i, 'blue' if self.cells[i][j] else 'white')
                 
-        if self.cur_unit:
-            for x, y in self.cur_unit.members:
+        if self.state.cur_unit:
+            for x, y in self.state.cur_unit.members:
                 draw_cell(x, y, 'red')
-            draw_pivot(self.cur_unit.pivot[0], self.cur_unit.pivot[1])                
+            draw_pivot(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1])                
 
 
 class UnitsPanel(QtGui.QDockWidget):
@@ -361,11 +415,12 @@ class TileEditor(QtGui.QMainWindow):
         self.frame_lbl = QtGui.QLabel('None')
         self.act_next = cmn.Action(self, 'Next frame (F3)', 'next.png', self.nextFrame, 'F3', enabled=False)
         self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'prev.png', self.prevFrame, 'F2', enabled=False)
-        self.act_play = cmn.Action(self, 'Play (F5)', 'play.png', None, 'F5', checkable=True)
+        self.act_playb = cmn.Action(self, 'Play back (F4)', 'control-180.png', self.startPlayback, 'F4', checkable=True)
+        self.act_play = cmn.Action(self, 'Play (F5)', 'play.png', self.startPlay, 'F5', checkable=True)
         self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'hand-point.png', self.gotoMove, 'F1')
         
         layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove), cmn.ToolBtn(self.act_prev), 
-                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_play)])
+                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play)])
         layout = cmn.VBox([layout, self.wi])
         self.setCentralWidget(cmn.ensureWidget(layout))
         
@@ -380,13 +435,22 @@ class TileEditor(QtGui.QMainWindow):
         
         self.backup_timer = QtCore.QTimer()
         self.backup_timer.timeout.connect(self.doPlay)
-        self.backup_timer.start(200)
+        self.backup_timer.start(50)
+        self.backup_timer2 = QtCore.QTimer()
+        self.backup_timer2.timeout.connect(self.doPlayb)
+        self.backup_timer2.start(50)
         
         self.cbx.currentIndexChanged.connect(self.onChanged)
         self.cbx.addItems([str(i) for i in range(24)])
                 
         self.show() 
         self.showSol()
+    
+    def startPlay(self):
+        self.act_playb.setChecked(False)
+        
+    def startPlayback(self):
+        self.act_play.setChecked(False)
     
     def doSave(self):
         if not self.frames:
@@ -414,45 +478,64 @@ class TileEditor(QtGui.QMainWindow):
         if ok:
             self.setFrame(val-1)
     
-    def startGame(self):        
-        seed = self.data['sourceSeeds'][0]
+    def startGameInternal(self, seed):
         self.seed = seed
         self.cmds = ''
-        self.seq = gen_rand(seed, self.data['sourceLength'])
+        self.seq = [x % len(self.units) for x in gen_rand(seed, self.data['sourceLength'])]
         
-        cur_unit = self.units[self.seq[0] % len(self.units)]
-        self.wi.placeUnit(cur_unit)
+        self.wi.initPos()
+        self.wi.placeUnit(self.seq, self.units)
+        
         self.frames = []
-        self.frames.append((copy.deepcopy(self.wi.cells), self.wi.cur_unit, 1))        
+        self.frames.append(Frame(self.wi.cells, self.wi.state))
+    
+    def startGame(self):        
+        seed = self.data['sourceSeeds'][0]
+        self.startGameInternal(seed)        
         self.setFrame(0)
+    
+    def printFrames(self):
+        return
+        print('!!')
+        for x in self.frames:
+            print(x.state)
     
     def doCommand(self, letter):
         if not self.frames:
-            self.startGame()
-        c = cmd_lets[letter]
+            self.startGame()        
         
-        if self.wi.cur_unit == None:
+        if self.wi.state.cur_unit == None:
             print('No more units!')
             return
-            
-        # cur_unit is always valid        
-        self.frames = self.frames[0 : self.cur_frame+1]
-        self.cmds = self.cmds[0 : self.cur_frame]
-        unit_idx = self.frames[-1][2]
         
+        self.frames = self.frames[0 : self.cur_frame+1]
+        self.printFrames()
+        
+        self.cmds = self.cmds[0 : self.cur_frame]
+        
+        self.doCommandInternal(letter) 
+        #print(self.cmds)
+        self.cmds = self.cmds + letter
+        self.printFrames()
+        self.setFrame(self.cur_frame+1)
+    
+    def doCommandInternal(self, letter):
+        c = cmd_lets[letter]        
+        
+        self.printFrames()
+        
+        res = True
         if self.wi.canMove(c):
             self.wi.doMove(c)
         else:
             self.wi.lockUnit()
-            if unit_idx < len(self.seq):
-                cur_unit = self.units[self.seq[unit_idx] % len(self.units)]
-                unit_idx += 1
-                self.wi.placeUnit(cur_unit)
-            
-        self.frames.append((copy.deepcopy(self.wi.cells), self.wi.cur_unit, unit_idx))
-        self.cmds = self.cmds + letter 
-        #print(self.cmds)
-        self.setFrame(self.cur_frame+1)
+            if self.wi.state.unit_idx < len(self.seq):
+                if not self.wi.placeUnit(self.seq, self.units):
+                    res = False
+        
+        #print('???')
+        self.frames.append(Frame(self.wi.cells, self.wi.state))
+        return res        
     
     def showSol(self):
         with io.open(self.solname, 'r') as f:
@@ -461,50 +544,24 @@ class TileEditor(QtGui.QMainWindow):
         id = sol["problemId"]
         seed = sol["seed"]
         self.seed = seed
-        tag = sol["tag"]
-        self.cmds = sol['solution']
-        print(decode_cmd(self.cmds))
+        tag = sol["tag"]        
         if self.data['id'] != id:
             print('wrong id, reloading')
             self.cbx.setCurrentIndex(id)
             #return
         print('Tag = %s, seed = %d' % (tag, seed))
-        self.seq = gen_rand(seed, self.data['sourceLength'])
-                
-        next_unit = True
-        unit_idx = 0
-        #cur_pos = None
-        #cur_unit = None
         
-        frames = []
+        self.startGameInternal(seed)
+        self.cmds = sol['solution']
+        #print(decode_cmd(self.cmds))
+        print('%d commands' % len(self.cmds))
+        for i, c in enumerate(self.cmds):
+            #print(c)
+            if not self.doCommandInternal(c):
+                print('Cannot spawn after %d' % i)
+                break
         
-        def check():
-            #self.wi.cur_unit = cur_unit
-            frames.append((copy.deepcopy(self.wi.cells), self.wi.cur_unit, unit_idx))
-            #self.wi.repaint()
-            #time.sleep(0.1)        
-        
-        self.wi.initPos()
-        for c in self.cmds:
-            if c in ['\n', 't', 'r']:
-                continue
-            c = cmd_lets[c]
-            if next_unit:
-                # determine position
-                cur_unit = self.units[self.seq[unit_idx] % len(self.units)]
-                unit_idx += 1
-                next_unit = False
-                self.wi.placeUnit(cur_unit)
-                check()
-                
-            if self.wi.canMove(c):
-                self.wi.doMove(c)
-                check()
-            else: 
-                self.wi.lockUnit()
-                next_unit = True              
-            
-        self.frames = frames
+        print(len(self.frames))
         self.setFrame(0) 
                 
     def nextFrame(self):
@@ -522,17 +579,19 @@ class TileEditor(QtGui.QMainWindow):
             self.update()
             return
         if idx < 0:
-            return
+            idx = 0
         if idx >= n_frames:
-            return
+            idx = n_frames - 1
         self.cur_frame = idx
-        self.wi.cells = self.frames[idx][0]
-        self.wi.cur_unit = self.frames[idx][1]
-        unit_idx = self.frames[idx][2]
-        unit_ty = self.seq[unit_idx] % len(self.units)
-        self.frame_lbl.setText('%d/%d - %d(%d)' % (idx+1, n_frames, unit_idx, unit_ty))
+        self.wi.state = copy.deepcopy(self.frames[idx].state)
+        self.wi.cells = copy.deepcopy(self.frames[idx].cells)        
+        unit_idx = self.frames[idx].state.unit_idx
+        unit_ty = -1 if unit_idx >= len(self.seq) else self.seq[unit_idx] % len(self.units)
+        score = self.frames[idx].state.score
+        self.frame_lbl.setText('%d/%d - %d(%d) | %d' % (idx+1, n_frames, unit_idx, unit_ty, score))
         self.act_next.setEnabled(idx + 1 < n_frames)
         self.act_prev.setEnabled(idx > 0)
+        self.printFrames()
         self.update()
     
     def doPlay(self):
@@ -540,6 +599,12 @@ class TileEditor(QtGui.QMainWindow):
             if self.cur_frame == len(self.frames) - 1:
                 self.act_play.setChecked(False)
             self.nextFrame()    
+            
+    def doPlayb(self):
+        if self.act_playb.isChecked():
+            if self.cur_frame == 0:
+                self.act_playb.setChecked(False)
+            self.prevFrame()
         
     
     def onChanged(self, idx):
