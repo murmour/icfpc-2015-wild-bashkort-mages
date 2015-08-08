@@ -205,6 +205,16 @@ struct STATE
 			if (board[a][b])
 				re += a*3+1;
 		FA(a,unit) re += unit[a].Y*3+1;
+		int lines = 0;
+		FOR(a,0,height-1)
+		{
+			bool flag = true;
+			FOR(b,0,width-1)
+				if (!board[a][b])
+					flag = false;
+			if (flag) lines++;
+		}
+		re += lines*lines*width*10;
 		return re;
 	}
 
@@ -252,6 +262,7 @@ struct STATE
 
 	void render()
 	{
+		return;
 		FOR(a,0,height-1)
 		{
 			if (a&1) cout << " ";
@@ -441,7 +452,7 @@ void sol( int problem )
 	Json::FastWriter fw;
 	data = serializeJson( answer );
 	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_2.json", problem );
+	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
 	fclose( file_out );
