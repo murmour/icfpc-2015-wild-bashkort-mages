@@ -10,7 +10,7 @@ type dir = L | R | LD | RD | LU | RU
 
 type rot_dir = CW | CCW
 
-type cell = Game_t.cell
+type cell = Js_Game_t.cell
 
 
 let get_cell_bit (b: t) (c: cell) (i: int) : bool =

@@ -5,7 +5,7 @@ type dir = L | R | LD | RD | LU | RU
 
 type rot_dir = CW | CCW
 
-type cell = Game_t.cell
+type cell = Js_Game_t.cell
 
 
 val make: width: int -> height: int -> t

@@ -10,7 +10,7 @@ type t =
     score: int;
   }
 
-type unit_ = Game_t.unit_
+type unit_ = Js_Game_t.unit_
 
 type focus =
   {
