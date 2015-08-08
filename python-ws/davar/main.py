@@ -578,8 +578,8 @@ class TileEditor(QtGui.QMainWindow):
         with io.open(self.solname, 'r') as f:
             sol = json.loads(f.read())
             
-        if len(sol) > 0:
-            val, ok = QtGui.QInputDialog.getInt(self, 'Seed', 'seed', 0)
+        if len(sol) > 1:
+            val, ok = QtGui.QInputDialog.getInt(self, 'Seed index', 'seed', 0)
             if not ok:
                 return
             if val < 0 or val >= len(sol):
