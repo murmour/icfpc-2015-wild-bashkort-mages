@@ -18,16 +18,20 @@
 namespace PlatBox 
 {
 
+	std::map<std::string, std::vector<std::string> > System::args;
+
 	void System::ParseArgs(const std::vector<std::string> &v)
 	{
 		args.clear();
 		std::string last;
-		for (auto &s : v)
+		for (std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); it++)
 		{
+			std::string s = *it;
 			if (s.size() > 1 && s[0] == '-')
 			{
 				last = s.substr(1);
-				args[last] = std::vector<std::string>();
+				if (args.find(last) == args.end())
+					args[last] = std::vector<std::string>();
 			}
 			else
 			{
@@ -42,7 +46,6 @@ namespace PlatBox
     void System::ParseArgs(int argc, char *argv[])
     {
 		std::vector<std::string> v;
-#ifndef W8
 #ifdef _MSC_VER
 		{
 			int argc;
