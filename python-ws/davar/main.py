@@ -102,8 +102,11 @@ class TileWidget(QtGui.QWidget):
         self.h = max([t[1] for t in self.cells] + [self.pivot[1]]) + 1
         #print(self.w)
         #print(self.h)
-        self.setMinimumSize((self.w+1) * self.SIZE, self.h * self.SIZE + 10)
+        self.resetmins()
         self.update()
+        
+    def resetmins(self):
+        self.setMinimumSize((self.w+1) * self.SIZE, self.h * self.SIZE + 10)
         
     def paintEvent(self, ev):
         p = QtGui.QPainter(self)
@@ -140,8 +143,11 @@ class TileWidget2(QtGui.QWidget):
         self.h = h
         self.w = w 
         self.init_data = data
-        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)
-        self.initPos()        
+        self.resetmins()
+        self.initPos() 
+        
+    def resetmins(self):
+        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)       
                 
     def keyPressEvent(self, ev):
         if ev.key() in qt_keys:
@@ -530,6 +536,7 @@ class TileEditor(QtGui.QMainWindow):
     def changeSz(self, sz):
         global SIZE
         SIZE = sz
+        self.wi.resetmins()
         self.update()
     
     def loadpowers(self):
