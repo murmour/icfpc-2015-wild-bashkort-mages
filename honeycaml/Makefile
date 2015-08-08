@@ -15,5 +15,8 @@ honey: atd
 scopper: atd
 	ocamlbuild $(OBUILD_FLAGS) scopper.native
 
+scop:
+	find ../solutions/ -type f | xargs ./scopper.native
+
 clean:
 	ocamlbuild -clean
