@@ -12,47 +12,71 @@ team_id = 42
 team_token = ":C0x3lXwXH12jFaTOA1LEKRHycE9aeXAsaAmm8UPFlPE="
 
 
-def send_solution(filename) -> bool:
+def send_solution(fname) -> bool:
+    print('Sending %s...' % fname)
     res = subprocess.call(
         ["curl",
          "--user", team_token,
          "-X", "POST",
          "-H", "Content-Type: application/json",
-         "--data", '@' + filename,
+         "--data", '@' + fname,
          "https://davar.icfpcontest.org/teams/%s/solutions" % team_id ])
-
     print()
     return (res == 0)
 
 
+def get_results() -> bool:
+    res = subprocess.call(
+        ["curl",
+         "--user", team_token,
+         "-X", "GET",
+         "https://davar.icfpcontest.org/teams/%s/solutions" % team_id ])
+    print()
+    return (res == 0)
+
+
+solution_name_rx = re.compile('solution_'
+                              '(?P<set_id>[0-9]+)_'
+                              '(?P<solver>[a-z]+)_'
+                              '(?P<version>[0-9]+)')
+
+def parse_solution_fname(fname):
+    m = re.match(solution_name_rx, fname)
+    return { 'set_id': int(m.group('set_id')),
+             'solver': m.group('solver'),
+             'version': int(m.group('version')) }
+
+
 def filter_solutions(solver, version):
+    files = [ ('../../solutions/' + f, parse_solution_fname(f))
+              for f in listdir("../../solutions") ]
 
-    rx = re.compile('solution_'
-                '(?P<set_id>[0-9]+)_'
-                '(?P<solver>[a-z]+)_'
-                '(?P<version>[0-9]+)')
+    def is_requested(info):
+        return ((info['solver'] == solver) and (info['version'] == version))
 
-    def get_id(f):
-        m = re.match(rx, f)
-        return int(m.group('set_id'))
-
-    def is_requested(f):
-        m = re.match(rx, f)
-        return ((m.group('solver') == solver) and
-                (int(m.group('version')) == version))
-
-    files = [ f for f in listdir("../../solutions") if is_requested(f) ]
-    files.sort(key = lambda x: get_id(x))
-    return [ ('../../solutions/' + f, get_id(f)) for f in files ]
+    files = [ (f, i) for (f, i) in files if is_requested(i) ]
+    files.sort(key = lambda pair: pair[1]['set_id'])
+    return files
 
 
 def send_all_solutions(solver, version):
     filtered = filter_solutions(solver, version)
-    for f, _id in filtered:
+    for f, info in filtered:
         time.sleep(1)
-        print('Sending %s...' % f)
         if not send_solution(f):
             return
+
+
+def score_solution(fname, info, log):
+    scores0 = mm.getScore(fname)
+    scores, pscores = zip(*scores0)
+    msg = 'Id = %d %d %d %s' % (info['set_id'],
+                                sum(scores) // len(scores),
+                                sum(pscores) // len(pscores),
+                                scores0)
+    print(msg)
+    log.write(msg + '\n')
+    return (scores, pscores)
 
 
 def score_all_solutions(solver, version):
@@ -60,14 +84,10 @@ def score_all_solutions(solver, version):
     total = 0
     totalp = 0
     with io.open('log_%s_%d.txt' % (solver, version), 'w') as log:
-        for f, ident in filtered:
-            scores0 = mm.getScore(f)
-            scores, pscores = zip(*scores0)
-            msg = 'Id = %d %d %d %s' % (ident, sum(scores) // len(scores), sum(pscores) // len(scores), scores0)
-            print(msg)
-            log.write(msg + '\n')
+        for (f, info) in filtered:
+            (scores, pscores) = score_solution(f, info, log)
             total += sum(scores) / len(scores)
-            totalp += sum(pscores) / len(scores)
+            totalp += sum(pscores) / len(pscores)
         msg = 'Total = %.2f (%.2f + %.2f)' % (total + totalp, total, totalp)
         print(msg)
         log.write(msg + '\n')
@@ -77,8 +97,8 @@ def compare_solutions(solver, version1, version2):
     files = zip(filter_solutions(solver, version1), filter_solutions(solver, version2))
     total = 0
     with io.open('log_%s_%d-%d.txt' % (solver, version1, version2), 'w') as log:
-        for (f1, id1), (f2, id2) in files:
-            assert(id1 == id2)
+        for (f1, info1), (f2, info2) in files:
+            assert(info1['set_id'] == info2['set_id'])
             scores1 = mm.getScore(f1)
             scores2 = mm.getScore(f2)
             assert(len(scores1) == len(scores2))
