@@ -41,7 +41,7 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
-string guten_tag = "rip_5";
+string guten_tag = "aperture_1";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -312,6 +312,37 @@ struct STATE
 			if (flag) lines++;
 		}
 		re += lines*lines*width*10;
+
+		FOR(a,0,height-1)
+			FOR(b,0,width-1)
+				if (board[a][b])
+					FOR(c,0,5)
+					{
+						PAR p = make_pair( b, a );
+						move_pnt( p, c, 1 );
+						bool flag = true;
+						FA(d,unit)
+							if (unit[d] == p)
+								flag = false;
+						if (flag)
+							if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
+								if (!board[p.Y][p.X])
+									re -= 2;
+					}
+		FA(a,unit) FOR(b,0,5)
+		{
+			PAR p = unit[a];
+			move_pnt( p, b, 1 );
+			bool flag = true;
+			FA(c,unit)
+				if (unit[c] == p)
+					flag = false;
+			if (flag)
+				if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
+					if (!board[p.Y][p.X])
+						re -= 2;
+		}
+				
 		return re;
 	}
 
@@ -442,7 +473,7 @@ struct DP_VALUE
 	}
 	void recalc_cost()
 	{
-		cost = (LL)end_value*1000000 + mx_len*1000 + sum;
+		cost = (LL)end_value*100000 + mx_len*1000 + sum;
 	}
 };
 
@@ -766,6 +797,7 @@ int main(int argc, char** argv)
 		powerphrases.push_back("ei!");
 		powerphrases.push_back("ia! ia!");
 		powerphrases.push_back("r'lyeh");
+		powerphrases.push_back("yuggoth");
 
 		build_automata();
 		//print_automata();
