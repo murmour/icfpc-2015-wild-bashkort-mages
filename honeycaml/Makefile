@@ -12,5 +12,8 @@ atd: game.atd solution.atd
 honey: atd
 	ocamlbuild $(OBUILD_FLAGS) honey.native
 
+scopper: atd
+	ocamlbuild $(OBUILD_FLAGS) scopper.native
+
 clean:
 	ocamlbuild -clean
