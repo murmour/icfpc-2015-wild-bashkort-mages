@@ -442,9 +442,45 @@ class TileEditor(QtGui.QMainWindow):
         
         self.cbx.currentIndexChanged.connect(self.onChanged)
         self.cbx.addItems([str(i) for i in range(24)])
-                
-        self.show() 
-        self.showSol()
+        
+        if self.solname:                
+            self.show() 
+            self.showSol()
+    
+    def calcScore(self, fname):
+        with io.open(fname, 'r') as f:
+            sols = json.loads(f.read())
+        res = []
+        print(fname)
+        print(len(sols))
+        for sol in sols:
+            id = sol["problemId"]
+            if self.data['id'] != id:
+                self.cbx.setCurrentIndex(id)        
+            seed = sol["seed"]
+            self.seed = seed
+            tag = sol["tag"]                  
+                #return
+            print('Tag = %s, seed = %d' % (tag, seed))
+            
+            self.startGameInternal(seed)
+            self.cmds = sol['solution']
+            #print(decode_cmd(self.cmds))
+            print('%d commands' % len(self.cmds))
+            for i, c in enumerate(self.cmds):
+                #print(c)
+                try:
+                    if not self.doCommandInternal(c, True):
+                        print('Cannot spawn after %d' % i)
+                        break
+                except:
+                    print('Move = %d' % i)
+                    raise
+            
+            #print(len(self.frames))
+            #self.setFrame(0)
+            res.append(self.wi.state.score)
+        return res
     
     def startPlay(self):
         self.act_playb.setChecked(False)
@@ -519,7 +555,7 @@ class TileEditor(QtGui.QMainWindow):
         self.printFrames()
         self.setFrame(self.cur_frame+1)
     
-    def doCommandInternal(self, letter):
+    def doCommandInternal(self, letter, no_frame=False):
         c = cmd_lets[letter]        
         
         self.printFrames()
@@ -534,13 +570,25 @@ class TileEditor(QtGui.QMainWindow):
                     res = False
         
         #print('???')
-        self.frames.append(Frame(self.wi.cells, self.wi.state))
+        if not no_frame:
+            self.frames.append(Frame(self.wi.cells, self.wi.state))
         return res        
     
     def showSol(self):
         with io.open(self.solname, 'r') as f:
             sol = json.loads(f.read())
-        sol = sol[0]
+            
+        if len(sol) > 0:
+            val, ok = QtGui.QInputDialog.getInt(self, 'Seed', 'seed', 0)
+            if not ok:
+                return
+            if val < 0 or val >= len(sol):
+                return
+            sol = sol[val]
+        else:
+            sol = sol[0]        
+        
+        
         id = sol["problemId"]
         seed = sol["seed"]
         self.seed = seed
@@ -560,8 +608,7 @@ class TileEditor(QtGui.QMainWindow):
             if not self.doCommandInternal(c):
                 print('Cannot spawn after %d' % i)
                 break
-        
-        print(len(self.frames))
+                
         self.setFrame(0) 
                 
     def nextFrame(self):
@@ -627,12 +674,25 @@ class TileEditor(QtGui.QMainWindow):
     def closeEvent(self, event):
         s = QtCore.QSettings('PlatBox', 'Davar')
         s.setValue("mainwnd/geometry", self.saveGeometry())
-        s.setValue('mainwnd/dockstate', self.saveState(0))        
+        s.setValue('mainwnd/dockstate', self.saveState(0))
         
+app = None
+
+def getScore(filename):
+    global app
+    if app == None:
+        app = QtGui.QApplication(sys.argv)
+    x = TileEditor('')
+    return x.calcScore(filename)
+            
         
 def main():
     #print(gen_rand(17, 10))
     #print(decode_cmd('ctulhu'))
+    #print(getScore('../../solutions/solution_1_rip_2.json'))
+    #print(getScore('../../solutions/solution_2_rip_2.json'))
+    #return
+    
     #return
     app = QtGui.QApplication(sys.argv)
     fname = 'test.json'
