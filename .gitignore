@@ -6,6 +6,7 @@ __pycache__
 *.suo
 *.vcproj
 *.user
+*.o
 */Debug
 */Release
 
@@ -13,3 +14,5 @@ honeycaml/generated/*
 *.native
 *.byte
 _build
+
+steak
