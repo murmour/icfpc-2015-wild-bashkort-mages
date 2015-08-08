@@ -1,8 +1,0 @@
-
-type cell <ocaml from="Cell" t="t"> = abstract
-
-type t =
-  {
-    members: cell list;
-    pivot: cell;
-  }
