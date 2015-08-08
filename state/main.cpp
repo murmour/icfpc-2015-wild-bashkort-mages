@@ -196,9 +196,14 @@ struct STATE
 				if (!board[a][b])
 					flag = false;
 			if (flag)
+			{
 				DFOR(b,a-1,0)
 					FOR(c,0,width-1)
 						board[b+1][c] = board[b][c];
+				FOR(c,0,width-1)
+					board[0][c] = false;
+				a++;
+			}
 		}
 	}
 
@@ -503,7 +508,7 @@ void sol (int problem)
 	Json::Value data;
 	data = serializeJson( answer );
 	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
+	sprintf( path, "../solutions/solution_%d_rip_4.json", problem );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
 	fclose( file_out );
