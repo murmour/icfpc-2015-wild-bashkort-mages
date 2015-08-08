@@ -4,6 +4,7 @@ import sys
 import re
 import io
 import time
+import json
 import main as mm
 from os import listdir
 
@@ -42,35 +43,35 @@ solution_name_rx = re.compile('solution_'
 
 def parse_solution_fname(fname):
     m = re.match(solution_name_rx, fname)
-    return { 'set_id': int(m.group('set_id')),
+    return { 'fname': '../../solutions/' + fname,
+             'set_id': int(m.group('set_id')),
              'solver': m.group('solver'),
              'version': int(m.group('version')) }
 
 
 def filter_solutions(solver, version):
-    files = [ ('../../solutions/' + f, parse_solution_fname(f))
-              for f in listdir("../../solutions") ]
+    files = [ parse_solution_fname(f) for f in listdir("../../solutions") ]
 
-    def is_requested(info):
-        return ((info['solver'] == solver) and (info['version'] == version))
+    def is_requested(f):
+        return ((f['solver'] == solver) and (f['version'] == version))
 
-    files = [ (f, i) for (f, i) in files if is_requested(i) ]
-    files.sort(key = lambda pair: pair[1]['set_id'])
+    files = [ f for f in files if is_requested(f) ]
+    files.sort(key = lambda f: f['set_id'])
     return files
 
 
 def send_all_solutions(solver, version):
     filtered = filter_solutions(solver, version)
-    for f, info in filtered:
+    for f in filtered:
         time.sleep(1)
         if not send_solution(f):
             return
 
 
-def score_solution(fname, info, log):
-    scores0 = mm.getScore(fname)
+def score_solution(f, log):
+    scores0 = mm.getScore(f['fname'])
     scores, pscores = zip(*scores0)
-    msg = 'Id = %d %d %d %s' % (info['set_id'],
+    msg = 'Id = %d %d %d %s' % (f['set_id'],
                                 sum(scores) // len(scores),
                                 sum(pscores) // len(pscores),
                                 scores0)
@@ -79,13 +80,14 @@ def score_solution(fname, info, log):
     return (scores, pscores)
 
 
-def score_all_solutions(solver, version):
+def score_all_solutions_internal(solver, version, action):
     filtered = filter_solutions(solver, version)
     total = 0
     totalp = 0
     with io.open('log_%s_%d.txt' % (solver, version), 'w') as log:
-        for (f, info) in filtered:
-            (scores, pscores) = score_solution(f, info, log)
+        for f in filtered:
+            (scores, pscores) = score_solution(f, log)
+            action(f, scores, pscores)
             total += sum(scores) / len(scores)
             totalp += sum(pscores) / len(pscores)
         msg = 'Total = %.2f (%.2f + %.2f)' % (total + totalp, total, totalp)
@@ -93,14 +95,33 @@ def score_all_solutions(solver, version):
         log.write(msg + '\n')
 
 
+def score_all_solutions(solver, version):
+    def action(*args, **kargs):
+        return None
+    score_all_solutions_internal(solver, version, action)
+
+
+def score_and_mark_all_solutions(solver, version):
+    def action(f, scores, pscores):
+        sol = None
+        with io.open(f['fname'], 'r') as h:
+            sol = json.loads(h.read())
+        with io.open(f['fname'], 'w') as h:
+            for i, x in enumerate(scores):
+                sol[i]['score'] = scores[i]
+                sol[i]['pscore'] = pscores[i]
+            h.write(json.dumps(sol))
+    score_all_solutions_internal(solver, version, action)
+
+
 def compare_solutions(solver, version1, version2):
     files = zip(filter_solutions(solver, version1), filter_solutions(solver, version2))
     total = 0
     with io.open('log_%s_%d-%d.txt' % (solver, version1, version2), 'w') as log:
-        for (f1, info1), (f2, info2) in files:
-            assert(info1['set_id'] == info2['set_id'])
-            scores1 = mm.getScore(f1)
-            scores2 = mm.getScore(f2)
+        for f1, f2 in files:
+            assert(f1['set_id'] == info2['set_id'])
+            scores1 = mm.getScore(f1['fname'])
+            scores2 = mm.getScore(f2['fname'])
             assert(len(scores1) == len(scores2))
             diff = sum(scores2) - sum(scores1)
             diffa = [b - a for a, b in zip(scores1, scores2)]
