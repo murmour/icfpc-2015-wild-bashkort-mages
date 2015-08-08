@@ -5,10 +5,11 @@
 + yuggoth
 + ia! ia!
 + r'lyeh
+- i2cf51p0
 
 Из текстов:
 - something
--- davar
+X davar
 - visually
 - written
 - actual
