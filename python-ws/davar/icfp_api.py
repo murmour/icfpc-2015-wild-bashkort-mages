@@ -42,6 +42,7 @@ def send_all_solutions(solver, version):
     filtered = filter_solutions(solver, version)
     for f in filtered:
         time.sleep(1)
+        print('Sending %s...' % f)
         if not send_solution('../../solutions/' + f):
             return
 
