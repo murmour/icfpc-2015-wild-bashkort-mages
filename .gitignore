@@ -15,4 +15,5 @@ honeycaml/generated/*
 *.byte
 _build
 
-steak
+play_icfp2015
+*.tar.gz
