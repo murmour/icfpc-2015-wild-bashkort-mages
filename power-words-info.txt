@@ -13,15 +13,15 @@ X davar
 - visually
 - written
 - actual
--- human
--- hex
--- and
+- human
+- hex
+- and
 - simultaneously
 
 Из твиттера:
 - watermelon
--- as2h2
+- as2h2
 - pollination
 - almonds
 X honey
--- cthulhu
+- cthulhu
