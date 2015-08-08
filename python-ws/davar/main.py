@@ -444,6 +444,8 @@ class TileEditor(QtGui.QMainWindow):
         self.wi = TileWidget2(self)        
         
         self.frame_lbl = QtGui.QLabel('None')
+        self.act_next0 = cmn.Action(self, 'Last frame (F12)', 'first.png', self.nextFrame0, 'F12')
+        self.act_prev0 = cmn.Action(self, 'First frame (F11)', 'last.png', self.prevFrame0, 'F11')
         self.act_next = cmn.Action(self, 'Next frame (F3)', 'next.png', self.nextFrame, 'F3', enabled=False)
         self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'prev.png', self.prevFrame, 'F2', enabled=False)
         self.act_playb = cmn.Action(self, 'Play back (F4)', 'control-180.png', self.startPlayback, 'F4', checkable=True)
@@ -455,7 +457,10 @@ class TileEditor(QtGui.QMainWindow):
         self.fastcb = QtGui.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
         
-        layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove), cmn.ToolBtn(self.act_prev), 
+        layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove),
+                           cmn.ToolBtn(self.act_prev0), 
+                           cmn.ToolBtn(self.act_next0), 
+                           cmn.ToolBtn(self.act_prev),                           
                            cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
         layout = cmn.VBox([layout, self.wi])
         self.setCentralWidget(cmn.ensureWidget(layout))
@@ -669,7 +674,13 @@ class TileEditor(QtGui.QMainWindow):
                 break
                 
         self.setFrame(0) 
-                
+
+    def nextFrame0(self):
+        self.setFrame(len(self.frames)-1)
+        
+    def prevFrame0(self):
+        self.setFrame(0)
+                        
     def nextFrame(self):
         self.setFrame(self.cur_frame + 1)
         
