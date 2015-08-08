@@ -1,26 +1,26 @@
 Из условия:
-- ei!
++ ei!
 
 Из входных данных:
-- yuggoth
-- ia! ia!
-- r'lyeh
++ yuggoth
++ ia! ia!
++ r'lyeh
 
 Из текстов:
 - something
-- davar
+-- davar
 - visually
 - written
 - actual
-- human
-- hex
-- and
+-- human
+-- hex
+-- and
 - simultaneously
 
 Из твиттера:
 - watermelon
-- as2h2
+-- as2h2
 - pollination
 - almonds
 - honey
-- cthulhu
+-- cthulhu
