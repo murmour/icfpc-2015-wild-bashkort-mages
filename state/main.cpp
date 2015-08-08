@@ -215,7 +215,13 @@ struct STATE
 			bool flag = true;
 			FOR(b,0,width-1)
 				if (!board[a][b])
-					flag = false;
+				{
+					bool flag2 = false;
+					FA(c,unit)
+						if (unit[c] == make_pair( b, a ))
+							flag2 = true;
+					if (!flag2) flag = false;
+				}
 			if (flag) lines++;
 		}
 		re += lines*lines*width*10;
