@@ -15,6 +15,7 @@ fname = '../../qualifier-problems/problem_%d.json'
 SIZE = 25
 N_PROBLEMS = 25 
 MAX_PLEN = 50
+SKIP_FRAMES = 50
 
 def unp_cell(cell):
     return cell['x'], cell['y']
@@ -47,6 +48,8 @@ class State:
         self.pscore = 0
         self.usedp = set()
         self.pvisual = ''
+        self.move_num = 0
+        self.history = '' 
         
     def __str__(self):
         return str((self.cur_unit, self.unit_idx, self.score, self.ls_old))
@@ -100,7 +103,7 @@ class TileWidget(QtGui.QWidget):
         self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE + 10)
         self.update()
         
-    def paintEvent(self, ev):        
+    def paintEvent(self, ev):
         p = QtGui.QPainter(self)
         p.setBrush(QtGui.QColor('white'))
         for i in range(self.h):
@@ -135,6 +138,7 @@ class TileWidget2(QtGui.QWidget):
         self.h = h
         self.w = w 
         self.init_data = data
+        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)
         self.initPos()        
                 
     def keyPressEvent(self, ev):
@@ -246,9 +250,13 @@ class TileWidget2(QtGui.QWidget):
             self.cells[ ce['y'] ][ ce['x'] ] = 1
         self.state = State(None, 0, 0, 0)        
     
-    def updatePower(self, history, pwords):
+    def updatePower(self, letter, pwords):
         #print(history)
         self.state.pvisual = ''
+        history = self.state.history + letter
+        if len(history) > MAX_PLEN:
+            history = history[1:]
+        self.state.history = history
         for pw in pwords:
             if history.endswith(pw):
                 if not pw in self.state.usedp:
@@ -438,7 +446,8 @@ class TileEditor(QtGui.QMainWindow):
         #self.img = QtGui.QImage(self.w * 50, self.h * 50,
         #                        QtGui.QImage.Format_ARGB32)
         #self.setCentralWidget(self.img)
-        self.frames = []        
+        self.frames = []
+        self.cur_frame = -1000        
         self.resize(800, 600)
         
         self.units_list = UnitsPanel(self)
@@ -477,7 +486,11 @@ class TileEditor(QtGui.QMainWindow):
                            cmn.ToolBtn(self.act_next0), 
                            cmn.ToolBtn(self.act_prev),                           
                            cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
-        layout = cmn.VBox([layout, self.wi])
+        
+        wrap = QtGui.QScrollArea()
+        wrap.setWidget(self.wi)
+        
+        layout = cmn.VBox([layout, wrap])
         self.setCentralWidget(cmn.ensureWidget(layout))
         
         menubar = self.menuBar()
@@ -535,8 +548,8 @@ class TileEditor(QtGui.QMainWindow):
             for i, c in enumerate(self.cmds):
                 #print(c)
                 try:
-                    history = self.cmds[max(0, i-MAX_PLEN) : i]
-                    if not self.doCommandInternalx(history, c, True):
+                    #history = self.cmds[max(0, i-MAX_PLEN) : i]
+                    if not self.doCommandInternal(c, True):
                         print('Cannot spawn after %d' % i)
                         break
                 except:
@@ -598,6 +611,7 @@ class TileEditor(QtGui.QMainWindow):
         
         self.frames = []
         self.frames.append(Frame(self.wi.cells, self.wi.state))
+        self.cur_frame = 0
     
     def startGame(self):        
         seed = self.data['sourceSeeds'][0]
@@ -623,19 +637,17 @@ class TileEditor(QtGui.QMainWindow):
         
         self.cmds = self.cmds[0 : self.cur_frame]
 
-        history = self.cmds
-        if len(history) > MAX_PLEN:
-            history = history[-MAX_PLEN:]                
-        self.doCommandInternalx(history, letter) 
+        #history = self.cmds
+        #if len(history) > MAX_PLEN:
+        #    history = history[-MAX_PLEN:]                
+        self.doCommandInternal(letter) 
         #print(self.cmds)
         self.cmds = self.cmds + letter
         self.printFrames()
         self.setFrame(self.cur_frame+1)
     
-    def doCommandInternalx(self, history, letter, no_frame=False):
-        c = cmd_lets[letter]        
-        
-        self.printFrames()
+    def doCommandInternal(self, letter, no_frame=False):
+        c = cmd_lets[letter]
         
         res = True
         if self.wi.canMove(c):
@@ -645,13 +657,16 @@ class TileEditor(QtGui.QMainWindow):
             if self.wi.state.unit_idx < len(self.seq):
                 if not self.wi.placeUnit(self.seq, self.units):
                     res = False
-        self.wi.updatePower(history + letter, self.powerwords)
-        
-        
+        self.wi.updatePower(letter, self.powerwords)
+        self.wi.state.move_num += 1
+                
         #print('???')
         if not no_frame:
-            self.frames.append(Frame(self.wi.cells, self.wi.state))
-        return res        
+            if self.wi.state.move_num % SKIP_FRAMES == 0:
+                self.frames.append(Frame(self.wi.cells, self.wi.state))
+            else:
+                self.frames.append(42)
+        return res
     
     def showSol(self):
         with io.open(self.solname, 'r') as f:
@@ -684,14 +699,16 @@ class TileEditor(QtGui.QMainWindow):
         print('%d commands' % len(self.cmds))
         for i, c in enumerate(self.cmds):
             #print(c)
-            history = self.cmds[max(0, i-MAX_PLEN) : i]
-            if not self.doCommandInternalx(history, c):
+            #history = self.cmds[max(0, i-MAX_PLEN) : i]
+            if not self.doCommandInternal(c):
                 print('Cannot spawn after %d' % i)
                 break
             
         #info = ''
-        score = self.frames[-1].state.score
-        pscore = self.frames[-1].state.pscore
+        #score = self.frames[-1].state.score
+        #pscore = self.frames[-1].state.pscore
+        score = self.wi.state.score
+        pscore = self.wi.state.pscore
         info = 'score = %d (%d + %d)' % (score + pscore, score, pscore)
         
         pscore2 = 0
@@ -710,7 +727,8 @@ class TileEditor(QtGui.QMainWindow):
                 pwords.append('%s (%d)' % (s, cnt))
                 pscore2 += 300 + 2 * len(s) * cnt
         info += '\npowerwords: %s' % ', '.join(pwords)
-        used = self.frames[-1].state.unit_idx
+        #used = self.frames[-1].state.unit_idx
+        used = self.wi.state.unit_idx
         stock = self.data['sourceLength']
         info += '\nused %d of %d' % (used, stock)
         if used < stock:
@@ -744,26 +762,39 @@ class TileEditor(QtGui.QMainWindow):
             idx = 0
         if idx >= n_frames:
             idx = n_frames - 1
-        self.cur_frame = idx
-        self.wi.state = copy.deepcopy(self.frames[idx].state)
-        self.wi.cells = copy.deepcopy(self.frames[idx].cells)        
-        unit_idx = self.frames[idx].state.unit_idx
+        
+        if idx == self.cur_frame and idx > 0:
+            return            
+        if idx == self.cur_frame + 1 and idx > 0:
+            #print(self.wi.state.move_num)
+            self.doCommandInternal(self.cmds[self.wi.state.move_num], True)            
+        else:
+            t = idx
+            while self.frames[t] == 42:
+                t -= 1
+            self.wi.state = copy.deepcopy(self.frames[t].state)
+            self.wi.cells = copy.deepcopy(self.frames[t].cells)
+            while t < idx:
+                self.doCommandInternal(self.cmds[self.wi.state.move_num], True)
+                t += 1
+                    
+        self.cur_frame = idx        
+        unit_idx = self.wi.state.unit_idx
         unit_ty = -1 if unit_idx >= len(self.seq) else self.seq[unit_idx] % len(self.units)
-        score = self.frames[idx].state.score
-        pscore = self.frames[idx].state.pscore
+        score = self.wi.state.score
+        pscore = self.wi.state.pscore
         totscore = score + pscore
         self.frame_lbl.setText('%d/%d - %d(%d) | %d(%d+%d)' % (idx+1, n_frames, unit_idx, unit_ty, totscore, score, pscore))
         self.act_next.setEnabled(idx + 1 < n_frames)
         self.act_prev.setEnabled(idx > 0)
-        self.printFrames()
-        self.update()
+        self.wi.update()
         
     
     def doPlay(self):
         if self.act_play.isChecked():
             if self.cur_frame == len(self.frames) - 1:
                 self.act_play.setChecked(False)
-            self.nextFrame()    
+            self.nextFrame()
             
     def doPlayb(self):
         if self.act_playb.isChecked():
