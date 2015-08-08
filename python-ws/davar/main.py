@@ -86,6 +86,8 @@ class InfoPanel(QtGui.QDockWidget):
 
 class TileWidget(QtGui.QWidget):
     
+    SIZE = 25
+    
     def __init__(self, owner):
         self.pivot = (0, 0)
         self.cells = []
@@ -100,26 +102,26 @@ class TileWidget(QtGui.QWidget):
         self.h = max([t[1] for t in self.cells] + [self.pivot[1]]) + 1
         #print(self.w)
         #print(self.h)
-        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE + 10)
+        self.setMinimumSize((self.w+1) * self.SIZE, self.h * self.SIZE + 10)
         self.update()
         
     def paintEvent(self, ev):
         p = QtGui.QPainter(self)
         p.setBrush(QtGui.QColor('white'))
         for i in range(self.h):
-            dx = SIZE // 2 if i % 2 == 1 else 0
+            dx = self.SIZE // 2 if i % 2 == 1 else 0
             for j in range(self.w):                
-                p.drawEllipse(dx + j * SIZE, i * SIZE * 42 // 50, SIZE, SIZE)
+                p.drawEllipse(dx + j * self.SIZE, i * self.SIZE * 42 // 50, self.SIZE, self.SIZE)
                 
         p.setBrush(QtGui.QColor('blue'))
         for j, i in self.cells:
-            dx = SIZE // 2 if i % 2 == 1 else 0
-            p.drawEllipse(dx + j * SIZE, i * SIZE * 42 // 50, SIZE, SIZE)
+            dx = self.SIZE // 2 if i % 2 == 1 else 0
+            p.drawEllipse(dx + j * self.SIZE, i * self.SIZE * 42 // 50, self.SIZE, self.SIZE)
             
         p.setBrush(QtGui.QColor('gray'))
         j, i = self.pivot
-        dx = SIZE // 2 if i % 2 == 1 else 0
-        p.drawEllipse(QtCore.QPoint(dx + j * SIZE + SIZE // 2, i * SIZE * 42 // 50 + SIZE // 2), 5, 5)
+        dx = self.SIZE // 2 if i % 2 == 1 else 0
+        p.drawEllipse(QtCore.QPoint(dx + j * self.SIZE + self.SIZE // 2, i * self.SIZE * 42 // 50 + self.SIZE // 2), 5, 5)
         
 
 
@@ -464,7 +466,14 @@ class TileEditor(QtGui.QMainWindow):
         if t:
             self.restoreState(t, 0)
                 
-        self.cbx = QtGui.QComboBox()                    
+        self.cbx = QtGui.QComboBox()
+        self.sizesl = QtGui.QSlider()
+        self.sizesl.setOrientation(QtCore.Qt.Horizontal)
+        self.sizesl.setMaximumWidth(100)
+        self.sizesl.setMinimum(10)
+        self.sizesl.setMaximum(50)
+        self.sizesl.setValue(25)
+        self.sizesl.valueChanged.connect(self.changeSz)
         self.wi = TileWidget2(self)        
         
         self.frame_lbl = QtGui.QLabel('None')
@@ -481,14 +490,15 @@ class TileEditor(QtGui.QMainWindow):
         self.fastcb = QtGui.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
         
-        layout = cmn.HBox([self.cbx, self.frame_lbl, cmn.ToolBtn(self.act_gotomove),
+        layout = cmn.HBox([self.cbx, self.sizesl, self.frame_lbl, cmn.ToolBtn(self.act_gotomove),
                            cmn.ToolBtn(self.act_prev0), 
                            cmn.ToolBtn(self.act_next0), 
                            cmn.ToolBtn(self.act_prev),                           
                            cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
         
-        wrap = QtGui.QScrollArea()
-        wrap.setWidget(self.wi)
+        #wrap = QtGui.QScrollArea()
+        #wrap.setWidget(self.wi)
+        wrap = self.wi
         
         layout = cmn.VBox([layout, wrap])
         self.setCentralWidget(cmn.ensureWidget(layout))
@@ -516,6 +526,11 @@ class TileEditor(QtGui.QMainWindow):
             self.show()
             if self.solname != '$$$': 
                 self.showSol()
+    
+    def changeSz(self, sz):
+        global SIZE
+        SIZE = sz
+        self.update()
     
     def loadpowers(self):
         with io.open('../../power-words.txt') as f:
