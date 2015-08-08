@@ -23,5 +23,5 @@ X davar
 -- as2h2
 - pollination
 - almonds
-- honey
+X honey
 -- cthulhu
