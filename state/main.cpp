@@ -12,8 +12,10 @@
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "common.h"
 
 using namespace std;
+using namespace PlatBox;
 
 #define WR printf
 #define RE scanf
@@ -305,10 +307,56 @@ void sol()
 	}
 }
 
+struct CELL
+{
+	int x, y;
+	FLD_BEGIN FLD(x) FLD(y) FLD_END
+};
+
+
+struct UNIT
+{
+	vector< CELL > members;
+	CELL pivot;
+	FLD_BEGIN FLD(members) FLD(pivot) FLD_END
+};
+
+struct INPUT
+{
+	int id;
+	vector< UNIT > units;
+	int width;
+	int height;
+	vector< CELL > filled;
+	int sourceLength;
+	vector< int > sourceSeeds;
+
+	FLD_BEGIN FLD(id) FLD(units) FLD(width) FLD(height)
+		FLD(filled) FLD(sourceLength) FLD(sourceSeeds) FLD_END
+};
+
 int main()
 {
 	freopen("input.txt","r",stdin);
 	freopen("output.txt","w",stdout);
+
+	//serializeJson( TMP() );
+
+	FILE * file = fopen( "../qualifier-problems/problem_0.json", "r" );
+	ass( file );
+	char buf[100];
+	string str;
+	while ( fgets( buf, 96, file ) ) str += string( buf );
+	fclose( file );
+	//cerr << str << "\n";
+
+	Json::Reader rdr;
+	Json::Value data;
+	if (!rdr.parse(str, data, false))
+		ass( false );
+	INPUT inp;
+	if (!deserializeJson( inp, data ))
+		ass( false );
 
 	sol();
 	return 0;

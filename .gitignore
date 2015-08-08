@@ -1,4 +1,5 @@
 python-ws/.metadata
+__pycache__
 
 *.ncb
 *.sln

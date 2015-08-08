@@ -23,7 +23,7 @@
 
 #include "json/json.h"
 
-#include "log.h"
+//#include "log.h"
 
 #ifdef INTERACTIVE_MODE
 #define dassert(x)
@@ -71,15 +71,15 @@ typedef u32 PBBOOL;
 
 #define FLD_BEGIN \
 	Json::Value _serialize() { Json::Value res; _enumerate(Serializer(res)); return res; } \
-	bool _deserialize(const Json::Value &data) { auto x = Deserializer(data); _enumerate(x); return x.result; } \
-	template<typename F> void _enumerate(F &&f) {
+	bool _deserialize(const Json::Value &data) { Deserializer x = Deserializer(data); _enumerate(x); return x.result; } \
+	template<typename F> void _enumerate(F f) {
 
 // validator should be a method of this class with no arguments returning bool
 #define FLD_BEGINV(validator) \
 	Json::Value _serialize() { Json::Value res; _enumerate(Serializer(res)); return res; } \
-	bool _deserialize(const Json::Value &data) { auto x = Deserializer(data); _enumerate(x); \
+	bool _deserialize(const Json::Value &data) { Deserializer x = Deserializer(data); _enumerate(x); \
 	      if (!x.result) return false; return validator(); } \
-	template<typename F> void _enumerate(F &&f) {
+	template<typename F> void _enumerate(F f) {
 
 #define FLD_END }
 #define FLD(fld, ...) f(#fld, fld, ##__VA_ARGS__);
