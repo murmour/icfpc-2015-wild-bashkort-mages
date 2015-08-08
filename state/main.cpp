@@ -40,6 +40,8 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
+int move_by_chr[255];
+
 struct STATE
 {
 	bool board[NN][NN];
@@ -166,6 +168,16 @@ struct STATE
 		else do_move( move==4 ? 5 : 4 );
 	}
 
+	void do_commands( string cmds )
+	{
+		FA(a,cmds)
+		{
+			int move = move_by_chr[cmds[a]];
+			if (can_move(move))
+				do_move(move);
+		}
+	}
+
 	void lock_unit()
 	{
 		FA(a,unit)
@@ -173,6 +185,26 @@ struct STATE
 			ass( !board[unit[a].Y][unit[a].X] );
 			board[unit[a].Y][unit[a].X] = true;
 		}
+		DFOR(a,height-1,0)
+		{
+			bool flag = true;
+			FOR(b,0,width-1)
+				if (!board[a][b])
+					flag = false;
+			if (flag)
+				DFOR(b,a-1,0)
+					FOR(c,0,width-1)
+						board[b+1][c] = board[b][c];
+		}
+	}
+
+	int get_value()
+	{
+		int re = 0;
+		FOR(a,0,height-1) FOR(b,0,width-1)
+			if (board[a][b])
+				re += a*3+1;
+		return re;
 	}
 
 	int calc_max_rotate()
@@ -235,77 +267,7 @@ struct STATE
 		}
 		cout << "\n";
 	}
-} S;
-
-set< pair< PAR, int > > Set;
-vector< pair< PAR, int > > end_pos;
-vector< string > cmds;
-string cmd = "lLRr12";
-//string cmd = "palbdk";
-string seq;
-
-void dfs( STATE & sta )
-{
-	Set.insert( make_pair( sta.pivot, sta.rotate ) );
-	int end_cmd = -1;
-	FOR(a,0,5)
-		if (sta.can_move(a))
-		{
-			int tmp = sta.rotate;
-			sta.do_move( a );
-			seq.push_back( cmd[a] );
-			if (Set.find( make_pair( sta.pivot, sta.rotate ) ) == Set.end())
-				dfs( sta );
-			seq.resize( SZ(seq)-1 );
-			sta.undo_move( a );
-			ass( tmp == sta.rotate );
-		}
-		else end_cmd = a;
-	if (end_cmd>=0)
-	{
-		end_pos.push_back( make_pair( sta.pivot, sta.rotate ) );
-		seq.push_back( cmd[end_cmd] );
-		cmds.push_back( seq );
-		seq.resize( SZ(seq)-1 );
-	}
-}
-
-void calc_all_end_positions( STATE sta )
-{
-	Set.clear();
-	seq.clear();
-	end_pos.clear();
-	cmds.clear();
-	dfs( sta );
-}
-
-void sol()
-{
-	S.init( 10, 10 );
-	S.board[9][1] = true;
-	S.board[8][6] = true;
-	S.board[9][6] = true;
-
-	PAR pi = make_pair( 0, 0 );
-	vector< PAR > un;
-	//un.push_back( make_pair( 0, 0 ) );
-	un.push_back( make_pair( 0, 1 ) );
-	un.push_back( make_pair( 1, 1 ) );
-	un.push_back( make_pair( 2, 2 ) );
-	un.push_back( make_pair( 3, 2 ) );
-	S.spawn_unit( pi, un );
-
-	S.render();
-
-	calc_all_end_positions( S );
-
-	cout << SZ(end_pos) << "\n";
-	FA(a,end_pos)
-	{
-		cout << end_pos[a].first.X << " " << end_pos[a].first.Y << " " << end_pos[a].second << " ";
-		cout << cmds[a] << "\n";
-	}
-}
+};
 
 struct CELL
 {
@@ -335,10 +297,175 @@ struct INPUT
 		FLD(filled) FLD(sourceLength) FLD(sourceSeeds) FLD_END
 };
 
+struct OUTPUT
+{
+	int problemId;
+	int seed;
+	string tag;
+	string solution;
+	
+	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
+};
+
+set< pair< PAR, int > > Set;
+vector< pair< PAR, int > > end_pos;
+vector< int > values;
+vector< string > cmds;
+//string cmd = "lLRr12";
+string cmd = "palbdk";
+string seq;
+
+void dfs( STATE & sta )
+{
+	Set.insert( make_pair( sta.pivot, sta.rotate ) );
+	int end_cmd = -1;
+	FOR(a,0,5)
+		if (sta.can_move(a))
+		{
+			int tmp = sta.rotate;
+			sta.do_move( a );
+			seq.push_back( cmd[a] );
+			if (Set.find( make_pair( sta.pivot, sta.rotate ) ) == Set.end())
+				dfs( sta );
+			seq.resize( SZ(seq)-1 );
+			sta.undo_move( a );
+			ass( tmp == sta.rotate );
+		}
+		else end_cmd = a;
+	if (end_cmd>=0)
+	{
+		end_pos.push_back( make_pair( sta.pivot, sta.rotate ) );
+		values.push_back( sta.get_value() );
+		seq.push_back( cmd[end_cmd] );
+		cmds.push_back( seq );
+		seq.resize( SZ(seq)-1 );
+	}
+}
+
+void calc_all_end_positions( STATE & sta )
+{
+	Set.clear();
+	seq.clear();
+	end_pos.clear();
+	values.clear();
+	cmds.clear();
+	dfs( sta );
+}
+
+struct RANDOM
+{
+	unsigned int seed;
+	void set_seed( unsigned int s )
+	{
+		seed = s;
+	}
+	unsigned int next()
+	{
+		unsigned int re = (seed>>16) & ((1<<15)-1);
+		seed = seed*1103515245 + 12345;
+		return re;
+	}
+} rnd;
+
+void unit_to_unit( UNIT & u, PAR & pivot, vector< PAR > & unit )
+{
+	pivot = make_pair( u.pivot.x, u.pivot.y );
+	FA(a,u.members) unit.push_back( make_pair( u.members[a].x, u.members[a].y ) );
+}
+
+void sol( INPUT inp )
+{
+	vector< OUTPUT > answer;
+	FA(z,inp.sourceSeeds)
+	{
+		STATE S;
+		S.init( inp.width, inp.height );
+		FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
+
+		rnd.set_seed( inp.sourceSeeds[z] );
+
+		OUTPUT out;
+		out.problemId = inp.id;
+		out.seed = inp.sourceSeeds[z];
+		out.tag = "bla";
+		out.solution = "";
+
+		FOR(a,0,inp.sourceLength-1)
+		{
+			int ind = (rnd.next()) % SZ(inp.units);
+			PAR pivot;
+			vector< PAR > unit;
+			unit_to_unit( inp.units[ind], pivot, unit );
+			if (!S.spawn_unit( pivot, unit )) break;
+			S.render();
+			calc_all_end_positions( S );
+			int ends = SZ(end_pos);
+			int best = -1, best_value = -1;
+			FOR(b,0,ends-1)
+				if (values[b] > best_value)
+				{
+					best = b;
+					best_value = values[b];
+				}
+			ass( best>=0 );
+			S.do_commands( cmds[best] );
+			ass( S.get_value() == best_value );
+			S.lock_unit();
+			S.render();
+
+			out.solution += cmds[best];
+		}
+		answer.push_back( out );
+	}
+
+	Json::FastWriter fw;
+	Json::Value data = serializeJson( answer );
+	string res = fw.write( data );
+	FILE * file = fopen( "../solutions/solution_0_rip_1.json", "w" );
+	fprintf( file, "%s", res.c_str() );
+	fclose( file );
+
+	/*S.init( 10, 10 );
+	S.board[9][1] = true;
+	S.board[8][6] = true;
+	S.board[9][6] = true;
+
+	PAR pi = make_pair( 0, 0 );
+	vector< PAR > un;
+	//un.push_back( make_pair( 0, 0 ) );
+	un.push_back( make_pair( 0, 1 ) );
+	un.push_back( make_pair( 1, 1 ) );
+	un.push_back( make_pair( 2, 2 ) );
+	un.push_back( make_pair( 3, 2 ) );
+	S.spawn_unit( pi, un );
+
+	S.render();
+
+	calc_all_end_positions( S );
+
+	cout << SZ(end_pos) << "\n";
+	FA(a,end_pos)
+	{
+		cout << end_pos[a].first.X << " " << end_pos[a].first.Y << " " << end_pos[a].second << " ";
+		cout << cmds[a] << "\n";
+	}*/
+}
+
+
+
 int main()
 {
 	freopen("input.txt","r",stdin);
 	freopen("output.txt","w",stdout);
+
+	string symb =
+		"p'!.03"
+		"aghij4"
+		"lmno 5"
+		"bcefy2"
+		"dqrvz1"
+		"kstuwx";
+	FA(a,symb) move_by_chr[symb[a]] = a/6;
 
 	//serializeJson( TMP() );
 
@@ -358,6 +485,6 @@ int main()
 	if (!deserializeJson( inp, data ))
 		ass( false );
 
-	sol();
+	sol( inp );
 	return 0;
 }
