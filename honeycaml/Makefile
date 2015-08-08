@@ -11,3 +11,6 @@ atd: game.atd solution.atd
 
 honey: atd
 	ocamlbuild $(OBUILD_FLAGS) honey.native
+
+clean:
+	ocamlbuild -clean

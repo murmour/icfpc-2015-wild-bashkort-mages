@@ -10,9 +10,9 @@ type cell = Game_t.cell
 
 val make: width: int -> height: int -> t
 
-val set: t -> cell -> bool -> unit
+val is_filled: t -> cell -> bool option
 
-val get: t -> cell -> bool option
+val set_filled: t -> cell -> bool -> unit
 
 val copy: t -> t
 
@@ -23,3 +23,9 @@ val rotate: pivot: cell -> cell -> rot_dir -> cell
 val is_valid_cell: t -> cell -> bool
 
 val is_empty_cell: t -> cell -> bool
+
+val has_rot: t -> cell -> int -> bool option
+
+val set_rot: t -> cell -> int -> unit
+
+val reset_rot: t -> unit

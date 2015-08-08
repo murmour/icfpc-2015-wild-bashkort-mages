@@ -31,7 +31,7 @@ type command =
 
 let make ~width ~height ~filled =
   let board = Board.make ~width ~height in
-  filled |> List.iter (fun c -> Board.set board c true);
+  filled |> List.iter (fun c -> Board.set_filled board c true);
   {
     board;
     width;
