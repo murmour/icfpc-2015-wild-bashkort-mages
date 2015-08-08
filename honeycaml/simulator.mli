@@ -11,9 +11,9 @@ type command =
   | TurnCCW
 
 
-val make: width: int -> height: int -> filled: Cell_t.t list -> t
+val make: width: int -> height: int -> filled: Board.cell list -> t
 
-val add_unit: t -> Unit_t.t -> [ `Focus of focus | `End ]
+val add_unit: t -> Unit_.t -> max_rot: int -> [ `Focus of focus | `End ]
 
 val command: focus -> command -> [ `Focus of focus | `Ready of t | `End ]
 

@@ -1,6 +1,15 @@
 
-type cell <ocaml from="Cell" t="t"> = abstract
-type unit_ <ocaml from="Unit" t="t"> = abstract
+type cell =
+  {
+    x: int;
+    y: int;
+  }
+
+type unit_ =
+  {
+    members: cell list;
+    pivot: cell;
+  }
 
 type t =
   {
