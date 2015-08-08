@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "common.h"
+#include "system.h"
 
 using namespace std;
 using namespace PlatBox;
@@ -41,6 +42,9 @@ void __never(int a){printf("\nOPS %d", a);}
 #define NN 100
 
 int move_by_chr[255];
+vector<string> powerphrases;
+bool quiet = false;
+
 
 struct STATE
 {
@@ -262,7 +266,7 @@ struct STATE
 
 	void render()
 	{
-		return;
+		if (quiet) return;
 		FOR(a,0,height-1)
 		{
 			if (a&1) cout << " ";
@@ -385,11 +389,9 @@ void unit_to_unit( UNIT & u, PAR & pivot, vector< PAR > & unit )
 	FA(a,u.members) unit.push_back( make_pair( u.members[a].x, u.members[a].y ) );
 }
 
-void sol( int problem )
+vector<OUTPUT> sol_internal( const char *path )
 {
-	cerr << "problem " << problem << "\n";
-	char path[1000];
-	sprintf( path, "../qualifier-problems/problem_%d.json", problem );
+
 	FILE * file_in = fopen( path, "r" );
 	ass( file_in );
 	char buf[100];
@@ -449,13 +451,15 @@ void sol( int problem )
 		answer.push_back( out );
 	}
 
-	Json::FastWriter fw;
+	/*Json::FastWriter fw;
 	data = serializeJson( answer );
 	string res = fw.write( data );
 	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
-	fclose( file_out );
+	fclose( file_out );*/
+
+	return answer;
 
 	/*S.init( 10, 10 );
 	S.board[9][1] = true;
@@ -483,12 +487,27 @@ void sol( int problem )
 	}*/
 }
 
-
-
-int main()
+void sol (int problem)
 {
-	freopen("input.txt","r",stdin);
-	freopen("output.txt","w",stdout);
+	cerr << "problem " << problem << "\n";
+	char path[1000];
+	sprintf( path, "../qualifier-problems/problem_%d.json", problem );
+	vector<OUTPUT> answer = sol_internal(path);
+	Json::FastWriter fw;
+	Json::Value data;
+	data = serializeJson( answer );
+	string res = fw.write( data );
+	sprintf( path, "../solutions/solution_%d_rip_3.json", problem );
+	FILE * file_out = fopen( path, "w" );
+	fprintf( file_out, "%s", res.c_str() );
+	fclose( file_out );
+}
+
+int main(int argc, char** argv)
+{
+	System::ParseArgs(argc, argv);
+	powerphrases = System::GetArgValues("p");
+	vector<string> files = System::GetArgValues("f");
 
 	string symb =
 		"p'!.03"
@@ -499,9 +518,35 @@ int main()
 		"kstuwx";
 	FA(a,symb) move_by_chr[symb[a]] = a/6;
 
-	//serializeJson( TMP() );
+	if (files.empty())
+	{
 
-	FOR(a,0,23) sol( a );
+		freopen("input.txt","r",stdin);
+		freopen("output.txt","w",stdout);
+
+		//serializeJson( TMP() );
+
+		quiet = true;
+		FOR(a,0,23) sol( a );
+
+	} else {
+
+		quiet = true;
+		vector<OUTPUT> res, tmp;
+		//printf("%d\n", (int)files.size());
+		for (int i = 0; i < (int)files.size(); i++)
+		{
+			//printf("File: %s\n", files[i].c_str());
+			tmp = sol_internal(files[i].c_str());
+			res.insert(res.end(), tmp.begin(), tmp.end());
+		}
+		Json::FastWriter fw;
+		Json::Value data;
+		data = serializeJson( res );
+		string sres = fw.write( data );
+		printf("%s", sres.c_str());
+
+	}
 
 	return 0;
 }
