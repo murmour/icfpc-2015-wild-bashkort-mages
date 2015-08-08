@@ -1,4 +1,4 @@
-#pragma comment(linker,"/STACK:64000000")
+#pragma comment(linker,"/STACK:256000000")
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <vector>
@@ -484,9 +484,14 @@ DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 	return dps2;
 }
 
+set< DP_STATE > was;
+
 DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 {
 	if (Map.find(dps)!=Map.end()) return Map[dps];
+
+	ass( was.find( dps )==was.end() );
+	was.insert( dps );
 
 	DP_VALUE v;
 	FOR(move,0,5)
@@ -508,7 +513,7 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 		if (move==5)
 		{
 			int r = dps.rotate-1;
-			if (r<0) r=dps.rotate-1;
+			if (r<0) r=sta.max_rotate-1;
 			if (r==dps.rot_range.first || r==dps.rot_range.second)
 				flag = false;
 			if (dps.rotate==dps.rot_range.second && dps.rot_range.first!=dps.rot_range.second)
@@ -560,6 +565,7 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 					v = tmp;
 			}
 	Map[dps] = v;
+	was.erase( dps );
 	return v;
 }
 
@@ -759,6 +765,7 @@ int main(int argc, char** argv)
 		//powerphrases.push_back("aed");
 		powerphrases.push_back("ei!");
 		powerphrases.push_back("ia! ia!");
+		powerphrases.push_back("r'lyeh");
 
 		build_automata();
 		//print_automata();
@@ -771,7 +778,7 @@ int main(int argc, char** argv)
 
 		quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 1 );
+		sol( 0 );
 
 		cerr << clock() << "\n";
 	} else {
