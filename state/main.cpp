@@ -204,6 +204,7 @@ struct STATE
 		FOR(a,0,height-1) FOR(b,0,width-1)
 			if (board[a][b])
 				re += a*3+1;
+		FA(a,unit) re += unit[a].Y*3+1;
 		return re;
 	}
 
@@ -421,7 +422,7 @@ void sol( INPUT inp )
 	Json::FastWriter fw;
 	Json::Value data = serializeJson( answer );
 	string res = fw.write( data );
-	FILE * file = fopen( "../solutions/solution_0_rip_1.json", "w" );
+	FILE * file = fopen( "../solutions/solution_0_rip_2.json", "w" );
 	fprintf( file, "%s", res.c_str() );
 	fclose( file );
 
