@@ -245,7 +245,7 @@ struct STATE
 		unit = n_unit;
 
 		max_rotate = calc_max_rotate();
-		cerr << max_rotate << "\n";
+		//cerr << max_rotate << "\n";
 		rotate = 0;
 		return true;
 	}
@@ -292,7 +292,7 @@ struct INPUT
 	int height;
 	vector< CELL > filled;
 	int sourceLength;
-	vector< int > sourceSeeds;
+	vector< unsigned int > sourceSeeds;
 
 	FLD_BEGIN FLD(id) FLD(units) FLD(width) FLD(height)
 		FLD(filled) FLD(sourceLength) FLD(sourceSeeds) FLD_END
@@ -301,7 +301,7 @@ struct INPUT
 struct OUTPUT
 {
 	int problemId;
-	int seed;
+	unsigned int seed;
 	string tag;
 	string solution;
 	
@@ -374,8 +374,27 @@ void unit_to_unit( UNIT & u, PAR & pivot, vector< PAR > & unit )
 	FA(a,u.members) unit.push_back( make_pair( u.members[a].x, u.members[a].y ) );
 }
 
-void sol( INPUT inp )
+void sol( int problem )
 {
+	cerr << "problem " << problem << "\n";
+	char path[1000];
+	sprintf( path, "../qualifier-problems/problem_%d.json", problem );
+	FILE * file_in = fopen( path, "r" );
+	ass( file_in );
+	char buf[100];
+	string str;
+	while ( fgets( buf, 96, file_in ) ) str += string( buf );
+	fclose( file_in );
+	//cerr << str << "\n";
+
+	Json::Reader rdr;
+	Json::Value data;
+	if (!rdr.parse(str, data, false))
+		ass( false );
+	INPUT inp;
+	if (!deserializeJson( inp, data ))
+		ass( false );
+
 	vector< OUTPUT > answer;
 	FA(z,inp.sourceSeeds)
 	{
@@ -420,11 +439,12 @@ void sol( INPUT inp )
 	}
 
 	Json::FastWriter fw;
-	Json::Value data = serializeJson( answer );
+	data = serializeJson( answer );
 	string res = fw.write( data );
-	FILE * file = fopen( "../solutions/solution_0_rip_2.json", "w" );
-	fprintf( file, "%s", res.c_str() );
-	fclose( file );
+	sprintf( path, "../solutions/solution_%d_rip_2.json", problem );
+	FILE * file_out = fopen( path, "w" );
+	fprintf( file_out, "%s", res.c_str() );
+	fclose( file_out );
 
 	/*S.init( 10, 10 );
 	S.board[9][1] = true;
@@ -470,22 +490,7 @@ int main()
 
 	//serializeJson( TMP() );
 
-	FILE * file = fopen( "../qualifier-problems/problem_0.json", "r" );
-	ass( file );
-	char buf[100];
-	string str;
-	while ( fgets( buf, 96, file ) ) str += string( buf );
-	fclose( file );
-	//cerr << str << "\n";
+	FOR(a,0,23) sol( a );
 
-	Json::Reader rdr;
-	Json::Value data;
-	if (!rdr.parse(str, data, false))
-		ass( false );
-	INPUT inp;
-	if (!deserializeJson( inp, data ))
-		ass( false );
-
-	sol( inp );
 	return 0;
 }

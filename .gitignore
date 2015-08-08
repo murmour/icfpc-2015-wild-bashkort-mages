@@ -7,6 +7,7 @@ __pycache__
 *.vcproj
 *.user
 */Debug
+*/Release
 
 honeycaml/generated/*
 *.native
