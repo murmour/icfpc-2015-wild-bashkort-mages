@@ -758,10 +758,11 @@ int main(int argc, char** argv)
 		//powerphrases.push_back("abaed");
 		//powerphrases.push_back("aed");
 		powerphrases.push_back("ei!");
+		powerphrases.push_back("ia! ia!");
 
 		build_automata();
-		print_automata();
-		return 0;
+		//print_automata();
+		//return 0;
 
 		freopen("input.txt","r",stdin);
 		freopen("output.txt","w",stdout);
@@ -772,6 +773,7 @@ int main(int argc, char** argv)
 		//FOR(a,0,23) sol( a );
 		sol( 1 );
 
+		cerr << clock() << "\n";
 	} else {
 
 		build_automata();
