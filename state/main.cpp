@@ -981,7 +981,7 @@ vector<OUTPUT> sol_internal( const char *path )
 
 
 	vector< OUTPUT > answer;
-	FA(z,inp.sourceSeeds) if (z==0)
+	FA(z,inp.sourceSeeds) //if (z==0)
 	{
 		try
 		{
