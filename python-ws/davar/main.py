@@ -860,8 +860,8 @@ def getScore(filename):
 def main():
     #print(gen_rand(17, 10))
     #print(decode_cmd('ctulhu'))
-    #print(getScore('../../solutions/solution_1_rip_2.json'))
-    #print(getScore('../../solutions/solution_2_rip_2.json'))
+    #print(getScore('../../data/solutions/solution_1_rip_2.json'))
+    #print(getScore('../../data/solutions/solution_2_rip_2.json'))
     #return
 
     #return

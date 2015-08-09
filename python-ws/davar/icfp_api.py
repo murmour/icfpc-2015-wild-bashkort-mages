@@ -65,14 +65,14 @@ solution_name_rx = re.compile('solution_'
 
 def parse_solution_fname(fname):
     m = re.match(solution_name_rx, fname)
-    return { 'fname': '../../solutions/' + fname,
+    return { 'fname': '../../data/solutions/' + fname,
              'set_id': int(m.group('set_id')),
              'solver': m.group('solver'),
              'version': int(m.group('version')) }
 
 
 def filter_solutions(solver, version):
-    files = [ parse_solution_fname(f) for f in listdir("../../solutions") ]
+    files = [ parse_solution_fname(f) for f in listdir("../../data/solutions") ]
 
     def is_requested(f):
         return ((solver == None or f['solver'] == solver) and
