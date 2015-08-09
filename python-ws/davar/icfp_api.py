@@ -113,10 +113,13 @@ def send_all_solutions(solver, version):
 def score_solution(f, log):
     scores0 = mm.getScore(f['fname'])
     scores, pscores = zip(*scores0)
+    avgScore = sum(scores) // len(scores)
+    avgPScore = sum(pscores) // len(pscores)
+    avgTotal = (sum(scores) + sum(pscores)) // len(pscores)
     msg = 'Id = %d, score = %d (%d + %d)' % (f['set_id'],
-                                             sum(scores) + sum(pscores),
-                                             sum(scores) // len(scores),
-                                             sum(pscores) // len(pscores))
+                                             avgTotal,
+                                             avgScore,
+                                             avgPScore)
     print(msg)
     print(scores0)
     log.write(msg + '\n')
