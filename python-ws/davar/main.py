@@ -10,7 +10,7 @@ import io#, time
 import re
 import common as cmn
 
-fname = '../../qualifier-problems/problem_%d.json'
+fname = '../../data/problems/problem_%d.json'
 
 SIZE = 25
 N_PROBLEMS = 25
