@@ -665,8 +665,8 @@ class TileEditor(QtGui.QMainWindow):
         self.doCommandInternal(letter)
         #print(self.cmds)
         self.cmds = self.cmds + letter
-        self.printFrames()
-        self.setFrame(self.cur_frame+1)
+        self.cur_frame += 1
+        self.updateStuff()
 
     def doCommandInternal(self, letter, no_frame=False):
         c = cmd_lets[letter]
@@ -801,6 +801,11 @@ class TileEditor(QtGui.QMainWindow):
                 t += 1
 
         self.cur_frame = idx
+        self.updateStuff()        
+
+    def updateStuff(self):
+        n_frames = len(self.frames)
+        idx = self.cur_frame
         unit_idx = self.wi.state.unit_idx
         unit_ty = -1 if unit_idx >= len(self.seq) else self.seq[unit_idx] % len(self.units)
         score = self.wi.state.score
@@ -810,7 +815,7 @@ class TileEditor(QtGui.QMainWindow):
         self.act_next.setEnabled(idx + 1 < n_frames)
         self.act_prev.setEnabled(idx > 0)
         self.wi.update()
-
+        
 
     def doPlay(self):
         if self.act_play.isChecked():
