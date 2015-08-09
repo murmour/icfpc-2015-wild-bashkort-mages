@@ -24,4 +24,4 @@ X davar
 - pollination
 - almonds
 X honey
-- cthulhu
++ cthulhu
