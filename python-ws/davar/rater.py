@@ -17,8 +17,8 @@ def get_our_scores():
         setting = m['setting']
         for scr in m['rankings']:
             if scr['teamId'] == team_id:
-                scores[setting] = (scr['rank'],scr['score'],
-                                   scr['power_score'],scr['tags'])
+                scores[setting] = (scr['rank'], scr['score'],
+                                   scr['power_score'], scr['tags'])
                 break
 
     for s in scores:

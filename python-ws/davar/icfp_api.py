@@ -60,14 +60,14 @@ def get_results() -> bool:
 
 solution_name_rx = re.compile('solution_'
                               '(?P<set_id>[0-9]+)_'
-                              '(?P<solver>[a-z]+)_'
+                              '(?P<tag>[a-z]+)_'
                               '(?P<version>[0-9]+).json')
 
 def parse_solution_fname(fname):
     m = re.match(solution_name_rx, fname)
     return { 'fname': '../../data/solutions/' + fname,
              'set_id': int(m.group('set_id')),
-             'solver': m.group('solver'),
+             'tag': m.group('tag'),
              'version': int(m.group('version')) }
 
 
@@ -90,11 +90,11 @@ def filter_problems(lowIndex, highIndex):
     return files
 
 
-def filter_solutions(solver, version):
+def filter_solutions(tag, version):
     files = [ parse_solution_fname(f) for f in listdir("../../data/solutions") ]
 
     def is_requested(f):
-        return ((solver == None or f['solver'] == solver) and
+        return ((tag == None or f['tag'] == tag) and
                 (version == None or f['version'] == version))
 
     files = [ f for f in files if is_requested(f) ]
@@ -102,8 +102,8 @@ def filter_solutions(solver, version):
     return files
 
 
-def send_all_solutions(solver, version):
-    filtered = filter_solutions(solver, version)
+def send_all_solutions(tag, version):
+    filtered = filter_solutions(tag, version)
     for f in filtered:
         time.sleep(1)
         if not send_solution(f):
@@ -126,11 +126,11 @@ def score_solution(f, log):
     return (scores, pscores)
 
 
-def score_all_solutions_internal(solver, version, action):
-    filtered = filter_solutions(solver, version)
+def score_all_solutions_internal(tag, version, action):
+    filtered = filter_solutions(tag, version)
     total = 0
     totalp = 0
-    with io.open('log_%s_%s.txt' % (solver, str(version)), 'w') as log:
+    with io.open('log_%s_%s.txt' % (tag, str(version)), 'w') as log:
         for f in filtered:
             (scores, pscores) = score_solution(f, log)
             action(f, scores, pscores)
@@ -141,13 +141,13 @@ def score_all_solutions_internal(solver, version, action):
         log.write(msg + '\n')
 
 
-def score_all_solutions(solver, version):
+def score_all_solutions(tag, version):
     def action(*args, **kargs):
         return None
-    score_all_solutions_internal(solver, version, action)
+    score_all_solutions_internal(tag, version, action)
 
 
-def score_and_mark_all_solutions(solver, version):
+def score_and_mark_all_solutions(tag, version):
     def action(f, scores, pscores):
         with io.open(f['fname'], 'r') as h:
             sol = json.loads(h.read())
@@ -156,13 +156,13 @@ def score_and_mark_all_solutions(solver, version):
                 sol[i]['score'] = scores[i]
                 sol[i]['pscore'] = pscores[i]
             h.write(json.dumps(sol))
-    score_all_solutions_internal(solver, version, action)
+    score_all_solutions_internal(tag, version, action)
 
 
-def compare_solutions(solver, version1, version2):
-    files = zip(filter_solutions(solver, version1), filter_solutions(solver, version2))
+def compare_solutions(tag, version1, version2):
+    files = zip(filter_solutions(tag, version1), filter_solutions(tag, version2))
     total = 0
-    with io.open('log_%s_%d-%d.txt' % (solver, version1, version2), 'w') as log:
+    with io.open('log_%s_%d-%d.txt' % (tag, version1, version2), 'w') as log:
         for f1, f2 in files:
             assert(f1['set_id'] == info2['set_id'])
             scores1 = mm.getScore(f1['fname'])
