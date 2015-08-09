@@ -27,7 +27,8 @@ X honey
 + cthulhu
 
 Из Jabber:
-- Ph'nglui
-- mglw'nafh
-- wgah'nagl
-- fhtagn
+X Ph'nglui
+X mglw'nafh
+X wgah'nagl
+X fhtagn
+- ph'nglui mglw'nafh cthulhu r'lyeh wgah'nagl fhtagn!
