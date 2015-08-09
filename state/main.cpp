@@ -47,7 +47,7 @@ const int kPivotShift = 100;
 
 #define CHECK_NEW_WORD
 
-string guten_tag = "topologic";
+string guten_tag = "topologic_1";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -445,8 +445,6 @@ struct OUTPUT
 	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
 };
 
-map<LL, LL> mmemo;
-
 #define MP make_pair
 
 struct xpos
@@ -503,7 +501,7 @@ struct DP_STATE
 
 struct DP_VALUE
 {
-	int mx_len;
+	/*int mx_len;
 	int sum;
 
 	DP_VALUE()
@@ -514,8 +512,28 @@ struct DP_VALUE
 	LL cost(LL end_value)
 	{
 		return (LL)end_value*10000000 + mx_len*100000 + sum;
+	}*/
+
+	LL cost;
+	int mx_len;
+	int sum;
+	int end_value;
+	int nxt;
+	DP_VALUE()
+	{
+		cost = 0;
+		mx_len = 0;
+		sum = 0;
+		end_value = 0;
+		nxt = -1;
+	}
+	void recalc_cost()
+	{
+		cost = (LL)end_value*100000 + mx_len*1000 + sum;
 	}
 };
+
+map<LL, DP_VALUE> mmemo;
 
 
 inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
@@ -585,13 +603,13 @@ void dfs_canmove( STATE & sta )
 	}
 }
 
-LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
+DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 {
 	LL dpscode = dps.getcode(sta);
-	map<LL, LL>::iterator it = mmemo.find(dpscode);
+	map<LL, DP_VALUE>::iterator it = mmemo.find(dpscode);
 	if (it != mmemo.end()) return it->second;
 
-	LL v = -o_O;
+	DP_VALUE v;
 	int nxt = -1;
 
 	xpos xp(dps.pivot.first, dps.pivot.second, dps.rotate);
@@ -633,11 +651,30 @@ LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
 
 			FOR(c,0,5)
 			{
-				DP_VALUE tmp = cur;
 				dps2.node = a_next[dps.node][move*6+c];
+
+				DP_VALUE tmp = get_dp( sta, dps2 );
 
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+#ifdef CHECK_NEW_WORD
+					if (found_words[d] == 0)
+#endif
+						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+
+
+				//DP_VALUE tmp = cur;
+				//dps2.node = a_next[dps.node][move*6+c];
+
+				//int msk = a_mask[dps.node][move*6+c];
+				/*FA(d,powerphrases) if ((msk>>d)&1)
 				{
 #ifdef CHECK_NEW_WORD
 					if (found_words[d] == 0)
@@ -651,7 +688,7 @@ LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
 				{
 					v = value;
 					nxt = move*6+c;
-				}
+				}*/
 			}
 			//sta.undo_move( move );
 		}
@@ -663,7 +700,24 @@ LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
 		if (!can.can[ move ])
 			FOR(c,0,5)
 			{
-				DP_VALUE tmp = cur;
+				DP_VALUE tmp;
+				int msk = a_mask[dps.node][move*6+c];
+				FA(d,powerphrases) if ((msk>>d)&1)
+				{
+#ifdef CHECK_NEW_WORD
+					if (found_words[d] == 0)
+#endif
+						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+					tmp.sum += SZ(powerphrases[d]);
+				}
+				tmp.end_value = (int)xval; //sta.get_value();
+				tmp.nxt = move*6+c;
+				tmp.recalc_cost();
+				if (v.cost < tmp.cost)
+					v = tmp;
+
+
+				/*DP_VALUE tmp = cur;
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
@@ -680,14 +734,14 @@ LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
 				{
 					v = value;
 					nxt = move*6+c;
-				}
+				}*/
 			}
 	//Map[dps] = v;
 	//was.erase( dps );
 	//v.recalc_cost();
-	v = (v & ~0xffLL) + nxt;
+	//v = (v & ~0xffLL) + nxt;
 	mmemo[dpscode] = v;
-	ass(nxt != -1);
+	//ass(nxt != -1);
 	//res = v;
 	//nextm[dpscode] = nxt;
 	return v;
@@ -707,7 +761,7 @@ void calc_crazy_dp( STATE & sta, int starting_node )
 	dps.from = 0;
 	dps.node = starting_node;
 
-	get_dp( sta, dps, DP_VALUE() );
+	get_dp( sta, dps );
 }
 
 set< pair< PAR, int > > Set;
@@ -844,7 +898,10 @@ vector<OUTPUT> sol_internal( const char *path )
 			while(1)
 			{
 				//int nxt = nextm[dps.getcode(S)];
-				int nxt = mmemo[dps.getcode(S)] & 0xff;
+				//int nxt = mmemo[dps.getcode(S)] & 0xff;
+				//out.solution.push_back( letters[nxt] );
+
+				int nxt = mmemo[dps.getcode(S)].nxt;
 				out.solution.push_back( letters[nxt] );
 
 				// checking powerwords
@@ -912,6 +969,7 @@ int main(int argc, char** argv)
 		powerphrases.push_back("ia! ia!");
 		powerphrases.push_back("r'lyeh");
 		powerphrases.push_back("yuggoth");
+		powerphrases.push_back("cthulhu");
 
 		build_automata();
 		//print_automata();
@@ -924,7 +982,7 @@ int main(int argc, char** argv)
 
 		quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 0 );
+		sol( 14 );
 
 		cerr << clock() << "\n";
 	} else {
