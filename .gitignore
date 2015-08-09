@@ -19,3 +19,4 @@ play_icfp2015
 *.tar.gz
 solutions
 data
+log_*

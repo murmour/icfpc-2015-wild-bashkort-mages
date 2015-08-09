@@ -61,7 +61,7 @@ def get_results() -> bool:
 solution_name_rx = re.compile('solution_'
                               '(?P<set_id>[0-9]+)_'
                               '(?P<solver>[a-z]+)_'
-                              '(?P<version>[0-9]+)')
+                              '(?P<version>[0-9]+).json')
 
 def parse_solution_fname(fname):
     m = re.match(solution_name_rx, fname)
@@ -69,6 +69,25 @@ def parse_solution_fname(fname):
              'set_id': int(m.group('set_id')),
              'solver': m.group('solver'),
              'version': int(m.group('version')) }
+
+
+problem_name_rx = re.compile('problem_(?P<id>[0-9]+).json')
+
+def parse_problem_fname(fname):
+    m = re.match(problem_name_rx, fname)
+    return { 'fname': '../../data/problems/' + fname,
+             'id': int(m.group('id')) }
+
+
+def filter_problems(lowIndex, highIndex):
+    files = [ parse_problem_fname(f) for f in listdir("../../data/problems") ]
+
+    def is_requested(f):
+        return ((f['id'] >= lowIndex) and (f['id'] <= highIndex))
+
+    files = [ f for f in files if is_requested(f) ]
+    files.sort(key = lambda f: f['id'])
+    return files
 
 
 def filter_solutions(solver, version):
