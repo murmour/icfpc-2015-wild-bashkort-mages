@@ -335,7 +335,7 @@ class TileWidget2(QtGui.QWidget):
                 draw_cell(x, y, 'red')
             draw_pivot(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1])
             
-        if self.state.pvisual:
+        if self.state.pvisual and self.state.cur_unit:
             draw_text(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1], self.state.pvisual)
                         
 
