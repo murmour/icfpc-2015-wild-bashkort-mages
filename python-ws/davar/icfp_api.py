@@ -94,11 +94,12 @@ def send_all_solutions(solver, version):
 def score_solution(f, log):
     scores0 = mm.getScore(f['fname'])
     scores, pscores = zip(*scores0)
-    msg = 'Id = %d %d %d %s' % (f['set_id'],
-                                sum(scores) // len(scores),
-                                sum(pscores) // len(pscores),
-                                scores0)
+    msg = 'Id = %d, score = %d (%d + %d)' % (f['set_id'],
+                                             sum(scores) + sum(pscores),
+                                             sum(scores) // len(scores),
+                                             sum(pscores) // len(pscores))
     print(msg)
+    print(scores0)
     log.write(msg + '\n')
     return (scores, pscores)
 
