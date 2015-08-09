@@ -13,14 +13,36 @@ team_id = 42
 team_token = ":C0x3lXwXH12jFaTOA1LEKRHycE9aeXAsaAmm8UPFlPE="
 
 
+def sanitize_problem(p):
+    sanitized = {}
+    sanitized['problemId'] = p['problemId']
+    sanitized['seed'] = p['seed']
+    sanitized['solution'] = p['solution']
+    sanitized['tag'] = p['tag']
+    return sanitized
+
+
+def write_sanitized_solution(f):
+    tempFile = '../../temp.json'
+
+    with io.open(f['fname'], 'r') as h:
+        sol = json.loads(h.read())
+    with io.open(tempFile, 'w') as h:
+        tempSol = [ sanitize_problem(p) for p in sol ]
+        h.write(json.dumps(tempSol))
+
+    return tempFile
+
+
 def send_solution(f) -> bool:
+    tempFile = write_sanitized_solution(f)
     print('Sending %s...' % f['fname'])
     res = subprocess.call(
         ["curl",
          "--user", team_token,
          "-X", "POST",
          "-H", "Content-Type: application/json",
-         "--data", '@' + f['fname'],
+         "--data", '@' + tempFile,
          "https://davar.icfpcontest.org/teams/%s/solutions" % team_id ])
     print()
     return (res == 0)
@@ -53,7 +75,8 @@ def filter_solutions(solver, version):
     files = [ parse_solution_fname(f) for f in listdir("../../solutions") ]
 
     def is_requested(f):
-        return ((f['solver'] == solver) and (f['version'] == version))
+        return ((solver == None or f['solver'] == solver) and
+                (version == None or f['version'] == version))
 
     files = [ f for f in files if is_requested(f) ]
     files.sort(key = lambda f: f['set_id'])
@@ -84,7 +107,7 @@ def score_all_solutions_internal(solver, version, action):
     filtered = filter_solutions(solver, version)
     total = 0
     totalp = 0
-    with io.open('log_%s_%d.txt' % (solver, version), 'w') as log:
+    with io.open('log_%s_%s.txt' % (solver, str(version)), 'w') as log:
         for f in filtered:
             (scores, pscores) = score_solution(f, log)
             action(f, scores, pscores)
@@ -103,11 +126,10 @@ def score_all_solutions(solver, version):
 
 def score_and_mark_all_solutions(solver, version):
     def action(f, scores, pscores):
-        sol = None
         with io.open(f['fname'], 'r') as h:
             sol = json.loads(h.read())
         with io.open(f['fname'], 'w') as h:
-            for i, x in enumerate(scores):
+            for i, v in enumerate(scores):
                 sol[i]['score'] = scores[i]
                 sol[i]['pscore'] = pscores[i]
             h.write(json.dumps(sol))
