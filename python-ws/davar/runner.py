@@ -37,6 +37,7 @@ if __name__ == '__main__':
         sol_js = runProblem(executable, p, words)
         if sol_js != None:
             sol_file = '../../data/solutions/solution_%d_%s.json' % (p['id'], tag)
-            sol_js['tag'] = tag
+            for p in sol_js:
+                p['tag'] = tag
             with io.open(sol_file, 'w') as h:
                 h.write(json.dumps(sol_js))
