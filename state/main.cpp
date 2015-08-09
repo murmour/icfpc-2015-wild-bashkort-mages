@@ -41,7 +41,7 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
-string guten_tag = "aperture_1";
+string guten_tag = "aperture_2";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -390,6 +390,7 @@ struct STATE
 
 	void render()
 	{
+		return;
 		if (quiet) return;
 		FOR(a,0,height-1)
 		{
@@ -515,14 +516,9 @@ DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 	return dps2;
 }
 
-set< DP_STATE > was;
-
 DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 {
 	if (Map.find(dps)!=Map.end()) return Map[dps];
-
-	ass( was.find( dps )==was.end() );
-	was.insert( dps );
 
 	DP_VALUE v;
 	FOR(move,0,5)
@@ -596,7 +592,6 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 					v = tmp;
 			}
 	Map[dps] = v;
-	was.erase( dps );
 	return v;
 }
 
@@ -702,6 +697,7 @@ vector<OUTPUT> sol_internal( const char *path )
 	vector< OUTPUT > answer;
 	FA(z,inp.sourceSeeds)
 	{
+		if (!quiet) cerr << " seed " << z << "\n";
 		STATE S;
 		S.init( inp.width, inp.height );
 		FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
@@ -716,6 +712,7 @@ vector<OUTPUT> sol_internal( const char *path )
 
 		FOR(a,0,inp.sourceLength-1)
 		{
+			if (!quiet) cerr << "  turn " << a << "\n";
 			int ind = (rnd.next()) % SZ(inp.units);
 			PAR pivot;
 			vector< PAR > unit;
@@ -794,10 +791,12 @@ int main(int argc, char** argv)
 	{
 		//powerphrases.push_back("abaed");
 		//powerphrases.push_back("aed");
-		powerphrases.push_back("ei!");
-		powerphrases.push_back("ia! ia!");
-		powerphrases.push_back("r'lyeh");
-		powerphrases.push_back("yuggoth");
+		//powerphrases.push_back("ei!");
+		//powerphrases.push_back("ia! ia!");
+		//powerphrases.push_back("r'lyeh");
+		//powerphrases.push_back("yuggoth");
+		//powerphrases.push_back("davar");
+		powerphrases.push_back("cthulhu");
 
 		build_automata();
 		//print_automata();
@@ -808,9 +807,9 @@ int main(int argc, char** argv)
 
 		//serializeJson( TMP() );
 
-		quiet = true;
+		//quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 0 );
+		sol( 4 );
 
 		cerr << clock() << "\n";
 	} else {

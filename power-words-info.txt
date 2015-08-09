@@ -1,14 +1,15 @@
 Из условия:
-- ei!
++ ei!
 
 Из входных данных:
-- yuggoth
-- ia! ia!
-- r'lyeh
++ yuggoth
++ ia! ia!
++ r'lyeh
+- i2cf51p0
 
 Из текстов:
 - something
-- davar
+X davar
 - visually
 - written
 - actual
@@ -22,5 +23,5 @@
 - as2h2
 - pollination
 - almonds
-- honey
-- cthulhu
+X honey
++ cthulhu
