@@ -13,14 +13,36 @@ team_id = 42
 team_token = ":C0x3lXwXH12jFaTOA1LEKRHycE9aeXAsaAmm8UPFlPE="
 
 
+def sanitize_problem(p):
+    sanitized = {}
+    sanitized['problemId'] = p['problemId']
+    sanitized['seed'] = p['seed']
+    sanitized['solution'] = p['solution']
+    sanitized['tag'] = p['tag']
+    return sanitized
+
+
+def write_sanitized_solution(f):
+    tempFile = '../../temp.json'
+
+    with io.open(f['fname'], 'r') as h:
+        sol = json.loads(h.read())
+    with io.open(tempFile, 'w') as h:
+        tempSol = [ sanitize_problem(p) for p in sol ]
+        h.write(json.dumps(tempSol))
+
+    return tempFile
+
+
 def send_solution(f) -> bool:
+    tempFile = write_sanitized_solution(f)
     print('Sending %s...' % f['fname'])
     res = subprocess.call(
         ["curl",
          "--user", team_token,
          "-X", "POST",
          "-H", "Content-Type: application/json",
-         "--data", '@' + f['fname'],
+         "--data", '@' + tempFile,
          "https://davar.icfpcontest.org/teams/%s/solutions" % team_id ])
     print()
     return (res == 0)
