@@ -14,14 +14,20 @@ X davar
 - written
 - actual
 - human
-- hex
-- and
+X hex
+X and
 - simultaneously
 
 Из твиттера:
 - watermelon
-- as2h2
+X as2h2
 - pollination
 - almonds
 X honey
 + cthulhu
+
+Из Jabber:
+- Ph'nglui
+- mglw'nafh
+- wgah'nagl
+- fhtagn
