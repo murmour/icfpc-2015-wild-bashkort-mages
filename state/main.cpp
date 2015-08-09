@@ -30,6 +30,7 @@ using namespace PlatBox;
 #define FA(i,v) FOR(i,0,SZ(v)-1)
 #define RFA(i,v) DFOR(i,SZ(v)-1,0)
 #define CLR(a) memset(a, 0, sizeof(a))
+#define CLRm1(a) memset(a, -1, sizeof(a))
 
 #define LL long long
 #define VI  vector<int>
@@ -41,18 +42,15 @@ void __never(int a){printf("\nOPS %d", a);}
 
 #define NN 100
 
-string guten_tag = "aperture_1";
+const int kNForCode = 1000;
+const int kPivotShift = 100;
+
+#define CHECK_NEW_WORD
+
+string guten_tag = "topologic";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
-
-/*string symbols =
-	"p'!.03"
-	"aghij4"
-	"lmno 5"
-	"bcefy2"
-	"dqrvz1"
-	"kstuwx";*/
 
 typedef unsigned int uint;
 const int MAX_VERS = 2000;
@@ -258,7 +256,7 @@ struct STATE
 	{
 		FA(a,cmds)
 		{
-			int move = move_by_chr[cmds[a]];
+			int move = move_by_chr[(int)cmds[a]];
 			if (can_move(move))
 				do_move(move);
 		}
@@ -447,6 +445,27 @@ struct OUTPUT
 	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
 };
 
+map<LL, LL> mmemo;
+
+#define MP make_pair
+
+struct xpos
+{
+	int x, y, rot;
+	xpos(int x, int y, int rot) : x(x), y(y), rot(rot) {}
+	bool operator < (const xpos &other) const {
+		return MP(x, MP(y, rot)) < MP(other.x, MP(other.y, other.rot));
+	}
+	static xpos Get(const STATE &sta)
+	{
+		return xpos(sta.pivot.first, sta.pivot.second, sta.rotate);
+	}
+};
+
+map<xpos, LL> vals_memo;
+
+vector<int> found_words;
+
 struct DP_STATE
 {
 	PAR pivot;
@@ -454,46 +473,68 @@ struct DP_STATE
 	PAR rot_range;
 	int from; // 0 - ?, 1 - left, 2 - right
 	int node;
+	LL getcode(const STATE &st)
+	{
+		//int w = st.width, h = st.height;
+		int res = 0;
+		int t;
+		res = res * 6 + rotate;
+		t = rot_range.first;
+		//ass ( t >= 0 && t < 6 );
+		res = res * 6 + t;
+		t = rot_range.second;
+		//ass ( t >= 0 && t < 6 );
+		res = res * 6 + t;
+		res = res * 3 + from;
+		res = res * n_vers + node;
+
+		LL res2 = res;
+		t = pivot.first + kPivotShift;
+		ass( t >= 0 && t < kNForCode );
+		res2 = res2 * kNForCode + t;
+		t = pivot.second + kPivotShift;
+		ass ( t >= 0 && t < kNForCode );
+		res2 = res2 * kNForCode + t;
+		return res2;
+	}
 };
+
+// 1000 * 1000 * 6 * 36 * 3 * 50
 
 struct DP_VALUE
 {
-	LL cost;
 	int mx_len;
 	int sum;
-	int end_value;
-	int nxt;
+
 	DP_VALUE()
 	{
-		cost = 0;
 		mx_len = 0;
 		sum = 0;
-		end_value = 0;
-		nxt = -1;
 	}
-	void recalc_cost()
+	LL cost(LL end_value)
 	{
-		cost = (LL)end_value*100000 + mx_len*1000 + sum;
+		return (LL)end_value*10000000 + mx_len*100000 + sum;
 	}
 };
 
-bool operator< ( const DP_STATE & A, const DP_STATE & B )
-{
-	if (A.pivot != B.pivot) return A.pivot < B.pivot;
-	if (A.rotate != B.rotate) return A.rotate < B.rotate;
-	if (A.rot_range != B.rot_range) return A.rot_range < B.rot_range;
-	if (A.from != B.from) return A.from < B.from;
-	return A.node < B.node;
-}
 
-map< DP_STATE, DP_VALUE > Map;
-
-DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
+inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 {
 	DP_STATE dps2 = dps;
+	// sta is not valid here (intial position!)
+	if (move==4)
+	{
+		dps2.rotate++;
+		if (dps2.rotate==sta.max_rotate) dps2.rotate = 0;
+	}
+	if (move==5)
+	{
+		dps2.rotate--;
+		if (dps2.rotate<0) dps2.rotate = sta.max_rotate-1;
+	}
+	if (move <= 3)
+		sta.move_pnt( dps2.pivot, move, 1 );
 
-	dps2.pivot = sta.pivot;
-	dps2.rotate = sta.rotate;
 	if (move==0) dps2.from = 2;
 	if (move==1 || move==2)
 	{
@@ -515,16 +556,48 @@ DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 	return dps2;
 }
 
-set< DP_STATE > was;
 
-DP_VALUE get_dp( STATE & sta, DP_STATE dps )
+struct CanMove
 {
-	if (Map.find(dps)!=Map.end()) return Map[dps];
+	bool can[6];
+};
 
-	ass( was.find( dps )==was.end() );
-	was.insert( dps );
+map<xpos, CanMove> memo_canmove;
 
-	DP_VALUE v;
+
+void dfs_canmove( STATE & sta )
+{
+	xpos xp = xpos::Get(sta);
+	CanMove &res = memo_canmove[xp];
+	vals_memo[xp] = sta.get_value();
+	FOR(a,0,5)
+	{
+		res.can[a] = sta.can_move(a);
+		if (res.can[a])
+		{
+			int tmp = sta.rotate;
+			sta.do_move( a );
+			if (memo_canmove.find( xpos::Get(sta) ) == memo_canmove.end())
+				dfs_canmove( sta );
+			sta.undo_move( a );
+			ass( tmp == sta.rotate );
+		}
+	}
+}
+
+LL get_dp( STATE & sta, DP_STATE dps, DP_VALUE cur )
+{
+	LL dpscode = dps.getcode(sta);
+	map<LL, LL>::iterator it = mmemo.find(dpscode);
+	if (it != mmemo.end()) return it->second;
+
+	LL v = -o_O;
+	int nxt = -1;
+
+	xpos xp(dps.pivot.first, dps.pivot.second, dps.rotate);
+	ass ( memo_canmove.find(xp) != memo_canmove.end() );
+	CanMove can = memo_canmove[xp];
+
 	FOR(move,0,5)
 	{
 		bool flag = true;
@@ -553,56 +626,79 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 				flag = false;
 		}
 
-		if (flag && sta.can_move( move ))
+		if (flag && can.can[ move ])
 		{
-			sta.do_move( move );
+			//sta.do_move( move );
 			DP_STATE dps2 = do_dp_move( sta, dps, move );
 
 			FOR(c,0,5)
 			{
+				DP_VALUE tmp = cur;
 				dps2.node = a_next[dps.node][move*6+c];
 
-				DP_VALUE tmp = get_dp( sta, dps2 );
-
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
-					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+#ifdef CHECK_NEW_WORD
+					if (found_words[d] == 0)
+#endif
+						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
 					tmp.sum += SZ(powerphrases[d]);
 				}
-				tmp.nxt = move*6+c;
-				tmp.recalc_cost();
-				if (v.cost < tmp.cost)
-					v = tmp;
+
+				LL value = get_dp( sta, dps2, tmp ) & ~0xffLL;
+				if (value > v)
+				{
+					v = value;
+					nxt = move*6+c;
+				}
 			}
-			sta.undo_move( move );
+			//sta.undo_move( move );
 		}
 	}
+
+	LL xval = vals_memo[xp];
+
 	FOR(move,0,5)
-		if (!sta.can_move( move ))
+		if (!can.can[ move ])
 			FOR(c,0,5)
 			{
-				DP_VALUE tmp;
+				DP_VALUE tmp = cur;
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
-					tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
+#ifdef CHECK_NEW_WORD
+					if (found_words[d] == 0)
+#endif
+						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
 					tmp.sum += SZ(powerphrases[d]);
 				}
-				tmp.end_value = sta.get_value();
-				tmp.nxt = move*6+c;
-				tmp.recalc_cost();
-				if (v.cost < tmp.cost)
-					v = tmp;
+
+
+				LL value = tmp.cost(xval) << 8;
+				if (value > v)
+				{
+					v = value;
+					nxt = move*6+c;
+				}
 			}
-	Map[dps] = v;
-	was.erase( dps );
+	//Map[dps] = v;
+	//was.erase( dps );
+	//v.recalc_cost();
+	v = (v & ~0xffLL) + nxt;
+	mmemo[dpscode] = v;
+	ass(nxt != -1);
+	//res = v;
+	//nextm[dpscode] = nxt;
 	return v;
 }
 
 void calc_crazy_dp( STATE & sta, int starting_node )
 {
-	Map.clear();
+	mmemo.clear();
+	vals_memo.clear();
+	memo_canmove.clear();
+	dfs_canmove(sta);
 
 	DP_STATE dps;
 	dps.pivot = sta.pivot;
@@ -611,7 +707,7 @@ void calc_crazy_dp( STATE & sta, int starting_node )
 	dps.from = 0;
 	dps.node = starting_node;
 
-	get_dp( sta, dps );
+	get_dp( sta, dps, DP_VALUE() );
 }
 
 set< pair< PAR, int > > Set;
@@ -699,6 +795,7 @@ vector<OUTPUT> sol_internal( const char *path )
 	if (!deserializeJson( inp, data ))
 		ass( false );
 
+
 	vector< OUTPUT > answer;
 	FA(z,inp.sourceSeeds)
 	{
@@ -713,6 +810,8 @@ vector<OUTPUT> sol_internal( const char *path )
 		out.seed = inp.sourceSeeds[z];
 		out.tag = guten_tag;
 		out.solution = "";
+
+		found_words = vector<int>(powerphrases.size());
 
 		FOR(a,0,inp.sourceLength-1)
 		{
@@ -744,8 +843,18 @@ vector<OUTPUT> sol_internal( const char *path )
 
 			while(1)
 			{
-				int nxt = Map[dps].nxt;
+				//int nxt = nextm[dps.getcode(S)];
+				int nxt = mmemo[dps.getcode(S)] & 0xff;
 				out.solution.push_back( letters[nxt] );
+
+				// checking powerwords
+				for (uint j = 0; j < powerphrases.size(); j++)
+				{
+					u32 plen = powerphrases[j].size();
+					if (out.solution.size() < plen) continue;
+					if (powerphrases[j] == out.solution.substr(out.solution.size()-plen, plen)) found_words[j]++;
+				}
+
 				int move = nxt/6;
 				if (S.can_move( move ))
 					S.do_move( move );
@@ -756,11 +865,15 @@ vector<OUTPUT> sol_internal( const char *path )
 			}
 
 			S.lock_unit();
+			fprintf(stderr, "%d, %d states\n", a, (int)mmemo.size());
 			S.render();
 
 			//out.solution += cmds[best];
 		}
 		answer.push_back( out );
+		fprintf(stderr, "Power:");
+		for (u32 i = 0; i < powerphrases.size(); i++) fprintf(stderr, " %d", found_words[i]);
+		fprintf(stderr, "\n");
 	}
 
 	return answer;
@@ -784,11 +897,12 @@ void sol (int problem)
 
 int main(int argc, char** argv)
 {
+	//CLRm1(memo);
 	System::ParseArgs(argc, argv);
 	powerphrases = System::GetArgValues("p");
 	vector<string> files = System::GetArgValues("f");
 
-	FOR(a,0,35) move_by_chr[letters[a]] = a/6;
+	FOR(a,0,35) move_by_chr[(int)letters[a]] = a/6;
 
 	if (files.empty())
 	{
