@@ -340,7 +340,7 @@ struct STATE
 					if (!board[p.Y][p.X])
 						re -= 2;
 		}
-				
+
 		return re;
 	}
 
@@ -441,7 +441,7 @@ struct OUTPUT
 	unsigned int seed;
 	string tag;
 	string solution;
-	
+
 	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
 };
 
@@ -940,13 +940,13 @@ void sol (int problem)
 {
 	cerr << "problem " << problem << "\n";
 	char path[1000];
-	sprintf( path, "../qualifier-problems/problem_%d.json", problem );
+	sprintf( path, "../data/problems/problem_%d.json", problem );
 	vector<OUTPUT> answer = sol_internal(path);
 	Json::FastWriter fw;
 	Json::Value data;
 	data = serializeJson( answer );
 	string res = fw.write( data );
-	sprintf( path, "../solutions/solution_%d_%s.json", problem, guten_tag.c_str() );
+	sprintf( path, "../data/solutions/solution_%d_%s.json", problem, guten_tag.c_str() );
 	FILE * file_out = fopen( path, "w" );
 	fprintf( file_out, "%s", res.c_str() );
 	fclose( file_out );
