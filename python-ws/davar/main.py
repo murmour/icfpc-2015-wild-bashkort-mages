@@ -540,7 +540,7 @@ class TileEditor(QtGui.QMainWindow):
         self.update()
 
     def loadpowers(self):
-        with io.open('../../power-words.txt') as f:
+        with io.open('../../data/power-words.txt') as f:
             x = f.read().split('\n')
             self.powerwords = list(set([s for s in x if not s.startswith('#') and s.strip()]))
         for s in self.powerwords:
