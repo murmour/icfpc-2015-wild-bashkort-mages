@@ -13,29 +13,29 @@ import common as cmn
 fname = '../../qualifier-problems/problem_%d.json'
 
 SIZE = 25
-N_PROBLEMS = 25 
-MAX_PLEN = 50
+N_PROBLEMS = 25
+MAX_PLEN = 60
 SKIP_FRAMES = 50
 
 def unp_cell(cell):
     return cell['x'], cell['y']
 
 class Unit:
-    
+
     def __init__(self, pivot = (0, 0), members = []):
         self.pivot = pivot
         self.members = members
-     
-    @staticmethod   
+
+    @staticmethod
     def load(data):
         res = Unit()
         res.pivot = unp_cell(data['pivot'])
         res.members = [unp_cell(x) for x in data['members']]
         return res
-    
+
     def __str__(self):
         return '%s | %s' % (str(self.pivot), str(self.members))
-    
+
     def __repr__(self):
         return self.__str__()
 
@@ -49,113 +49,113 @@ class State:
         self.usedp = set()
         self.pvisual = ''
         self.move_num = 0
-        self.history = '' 
-        
+        self.history = ''
+
     def __str__(self):
         return str((self.cur_unit, self.unit_idx, self.score, self.ls_old))
-    
+
     def __repr__(self):
         return self.__str__()
-    
+
 
 class Frame:
     def __init__(self, cells, state):
         self.cells = copy.deepcopy(cells)
-        self.state = copy.deepcopy(state)        
+        self.state = copy.deepcopy(state)
 
 
 class InfoPanel(QtGui.QDockWidget):
-    
+
     def __init__(self, owner):
-        
+
         QtGui.QDockWidget.__init__(self, ' Solution info')
-        
+
         self.owner = owner
-        self.setObjectName('info_panel') # for state saving        
-                
+        self.setObjectName('info_panel') # for state saving
+
         e = QtGui.QTextEdit()
         e.setFont(QtGui.QFont('Consolas', 10))
         e.setReadOnly(True)
         self.e = e
         self.setWidget(e)
-        
+
         self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
-    
+
     def setData(self, text):
-        self.e.setPlainText(text)        
+        self.e.setPlainText(text)
 
 class TileWidget(QtGui.QWidget):
-    
+
     SIZE = 25
-    
+
     def __init__(self, owner):
         self.pivot = (0, 0)
         self.cells = []
         self.w = 0
-        self.h = 0        
-        QtGui.QWidget.__init__(self)        
-        
+        self.h = 0
+        QtGui.QWidget.__init__(self)
+
     def setData(self, data):
         self.pivot = data.pivot
         self.cells = data.members
-        self.w = max([t[0] for t in self.cells] + [self.pivot[0]]) + 1 
+        self.w = max([t[0] for t in self.cells] + [self.pivot[0]]) + 1
         self.h = max([t[1] for t in self.cells] + [self.pivot[1]]) + 1
         #print(self.w)
         #print(self.h)
         self.resetmins()
         self.update()
-        
+
     def resetmins(self):
         self.setMinimumSize((self.w+1) * self.SIZE, self.h * self.SIZE + 10)
-        
+
     def paintEvent(self, ev):
         p = QtGui.QPainter(self)
         p.setBrush(QtGui.QColor('white'))
         for i in range(self.h):
             dx = self.SIZE // 2 if i % 2 == 1 else 0
-            for j in range(self.w):                
+            for j in range(self.w):
                 p.drawEllipse(dx + j * self.SIZE, i * self.SIZE * 42 // 50, self.SIZE, self.SIZE)
-                
+
         p.setBrush(QtGui.QColor('blue'))
         for j, i in self.cells:
             dx = self.SIZE // 2 if i % 2 == 1 else 0
             p.drawEllipse(dx + j * self.SIZE, i * self.SIZE * 42 // 50, self.SIZE, self.SIZE)
-            
+
         p.setBrush(QtGui.QColor('gray'))
         j, i = self.pivot
         dx = self.SIZE // 2 if i % 2 == 1 else 0
         p.drawEllipse(QtCore.QPoint(dx + j * self.SIZE + self.SIZE // 2, i * self.SIZE * 42 // 50 + self.SIZE // 2), 5, 5)
-        
 
 
-    
+
+
 class TileWidget2(QtGui.QWidget):
-    
+
     def __init__(self, owner):
         QtGui.QWidget.__init__(self)
         self.owner = owner
-        self.h = None        
-        self.state = None        
-        
+        self.h = None
+        self.state = None
+
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
-    
+
     def setData(self, data, h, w):
         self.h = h
-        self.w = w 
+        self.w = w
         self.init_data = data
         self.resetmins()
-        self.initPos() 
-        
+        self.initPos()
+
     def resetmins(self):
-        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)       
-                
+        self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)
+
     def keyPressEvent(self, ev):
         if ev.key() in qt_keys:
             self.owner.doCommand(qt_keys[ev.key()])
-            
+
     def canMove(self, move):
         pivot = self.state.cur_unit.pivot
-        def f(p):            
+        def f(p):
             if move <= 3:
                 res = self.move_pnt(p, move, 1)
             else:
@@ -170,9 +170,9 @@ class TileWidget2(QtGui.QWidget):
             if self.cells[y][x]:
                 return False
             return True
-        
+
         return cmn.allF(self.state.cur_unit.members, f)
-    
+
     def move_pnt(self, p, dir, d):
         if d < 0:
             d *= -1
@@ -180,7 +180,7 @@ class TileWidget2(QtGui.QWidget):
             if dir >= 6: dir -= 6
         x, y = p
         if (y & 1) == 0:
-            if dir == 0: 
+            if dir == 0:
                 x -= d
             elif dir == 1:
                 x -= (d + 1) // 2
@@ -197,7 +197,7 @@ class TileWidget2(QtGui.QWidget):
                 x -= (d + 1) // 2
                 y -= d
         else:
-            if dir == 0: 
+            if dir == 0:
                 x -= d
             elif dir == 1:
                 x -= d // 2
@@ -213,9 +213,9 @@ class TileWidget2(QtGui.QWidget):
             elif dir == 5:
                 x -= d // 2
                 y -= d
-        return x, y    
-    
-    def doMove(self, move):        
+        return x, y
+
+    def doMove(self, move):
         pivot = self.state.cur_unit.pivot
         def f(p):
             if move <= 3:
@@ -226,38 +226,38 @@ class TileWidget2(QtGui.QWidget):
                 p_end = self.move_pnt(p_end, 4 if move == 4 else 0, pivot[1] - p[1])
                 p_end = self.move_pnt(p_end, 5 if move == 4 else 1, p1[0] - p[0])
                 return p_end
-        self.state.cur_unit = Unit(f(pivot), [f(x) for x in self.state.cur_unit.members])        
-    
+        self.state.cur_unit = Unit(f(pivot), [f(x) for x in self.state.cur_unit.members])
+
     def placeUnit(self, seq, units):
         assert(self.state.unit_idx < len(seq))
-        unit = units[seq[self.state.unit_idx]]        
+        unit = units[seq[self.state.unit_idx]]
         mi = min([ t[1] for t in unit.members ])
         unit = Unit( self.move_pnt(unit.pivot, 5, mi), [ self.move_pnt(p, 5, mi) for p in unit.members ] )
         mi = min( t[0] for t in unit.members )
         ma = max( t[0] for t in unit.members )
         d = (self.w - (ma - mi + 1)) // 2 - mi
         unit = Unit( self.move_pnt(unit.pivot, 3, d), [ self.move_pnt(p, 3, d) for p in unit.members ] )
-        
+
         for x, y in unit.members:
             if self.cells[y][x]:
             #assert(not self.cells[y][x])
                 return False
-        
+
         self.state.cur_unit = unit
         self.state.unit_idx += 1
         return True
         #print(d)
         #print(unit)
         #return unit
-    
+
     def initPos(self):
         if not self.h:
             return
         self.cells = [[0] * self.w for _ in range(self.h)]
         for ce in self.init_data:
             self.cells[ ce['y'] ][ ce['x'] ] = 1
-        self.state = State(None, 0, 0, 0)        
-    
+        self.state = State(None, 0, 0, 0)
+
     def updatePower(self, letter, pwords):
         #print(history)
         self.state.pvisual = ''
@@ -272,11 +272,11 @@ class TileWidget2(QtGui.QWidget):
                     self.state.pscore += 300
                 self.state.pscore += 2 * len(pw)
                 self.state.pvisual += pw
-    
+
     def lockUnit(self):
         for x, y in self.state.cur_unit.members:
             self.cells[y][x] = 1
-            
+
         # collapse here
         new_cells = [row for row in self.cells if not cmn.allF(row, lambda x: x == 1)]
         size = len(self.state.cur_unit.members)
@@ -285,7 +285,7 @@ class TileWidget2(QtGui.QWidget):
             new_cells = [[0] * self.w for _ in range(ls)] + new_cells
             self.cells = new_cells
         ls_old = self.state.ls_old
-        
+
         '''
         move_score = points + line_bonus
           where
@@ -300,22 +300,22 @@ class TileWidget2(QtGui.QWidget):
         self.state.cur_unit = None
         self.state.ls_old = ls
         self.state.score += points
-    
+
     def paintEvent(self, ev):
         if not self.h:
-            return        
+            return
         p = QtGui.QPainter(self)
-        
+
         def draw_cell(x, y, col):
             p.setBrush(QtGui.QColor(col))
             dx = SIZE // 2 if y % 2 == 1 else 0
             p.drawEllipse(dx + x * SIZE, y * SIZE * 42 // 50, SIZE, SIZE)
-            
+
         def draw_pivot(x, y):
             p.setBrush(QtGui.QColor('gray'))
             dx = SIZE // 2 if y % 2 == 1 else 0
             p.drawEllipse(QtCore.QPoint(dx + x * SIZE + SIZE // 2, y * SIZE * 42 // 50 + SIZE // 2), 5, 5)
-        
+
         def draw_text(x, y, s):
             font = p.font()
             font.setPixelSize(50)
@@ -324,62 +324,62 @@ class TileWidget2(QtGui.QWidget):
             p.setPen(QtGui.QColor('green'))
             dx = SIZE // 2 if y % 2 == 1 else 0
             p.drawText(QtCore.QPoint(dx + x * SIZE + SIZE // 2, y * SIZE * 42 // 50 + SIZE // 2), s)
-            p.setPen(QtGui.QColor('gray'))            
-            
-        for i in range(self.h):            
+            p.setPen(QtGui.QColor('gray'))
+
+        for i in range(self.h):
             for j in range(self.w):
                 draw_cell(j, i, 'blue' if self.cells[i][j] else 'white')
-                
+
         if self.state.cur_unit:
             for x, y in self.state.cur_unit.members:
                 draw_cell(x, y, 'red')
             draw_pivot(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1])
-            
+
         if self.state.pvisual and self.state.cur_unit:
             draw_text(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1], self.state.pvisual)
-                        
+
 
 
 class UnitsPanel(QtGui.QDockWidget):
-    
+
     def __init__(self, owner):
-        
+
         QtGui.QDockWidget.__init__(self, ' Units')
-        
+
         self.owner = owner
-        self.setObjectName('object_creator') # for state saving        
-        
+        self.setObjectName('object_creator') # for state saving
+
         self.setWidget(QtGui.QWidget())
         self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
-    
+
     def setData(self, units):
         self.units = units
         def make(x):
             t = TileWidget(self)
             t.setData(x)
             return t
-            
+
         layout = cmn.VBox([make(x) for x in units])
         wrap = QtGui.QScrollArea()
-        wrap.setWidget(cmn.ensureWidget(layout))        
+        wrap.setWidget(cmn.ensureWidget(layout))
         self.setWidget(wrap)
-        
+
         #self.cbx.clear()
         #self.cbx.addItems([str(i) for i in range(len(units))])
-        
+
     def onChanged(self, idx):
         if idx < 0:
             return
         self.wi.setData(self.units[idx])
-        
-def gen_rand(seed, cnt):    
+
+def gen_rand(seed, cnt):
     cur = seed
     res = []
     mod = 2 ** 32
     for _ in range(cnt):
         res.append((cur >> 16) & 0x7fff)
         cur = (1103515245 * cur + 12345) % mod
-    return res        
+    return res
 
 CMDW = 0
 CMDE = 3
@@ -444,26 +444,26 @@ def decode_cmd(s):
     return ' '.join([cmd_names[cmd_lets[c]] for c in s])
 
 class TileEditor(QtGui.QMainWindow):
-    
+
     def __init__(self, solname):
         QtGui.QMainWindow.__init__(self)
-        
+
         self.solname = solname
         self.loadpowers()
-        
+
         #self.img = QtGui.QImage(self.w * 50, self.h * 50,
         #                        QtGui.QImage.Format_ARGB32)
         #self.setCentralWidget(self.img)
         self.frames = []
-        self.cur_frame = -1000        
+        self.cur_frame = -1000
         self.resize(800, 600)
-        
+
         self.units_list = UnitsPanel(self)
-        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.units_list)        
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, self.units_list)
         self.info_box = InfoPanel(self)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self.info_box)
-        
-        
+
+
         s = QtCore.QSettings('PlatBox', 'Davar')
         t = s.value("mainwnd/geometry")
         if t:
@@ -471,7 +471,7 @@ class TileEditor(QtGui.QMainWindow):
         t = s.value("mainwnd/dockstate")
         if t:
             self.restoreState(t, 0)
-                
+
         self.cbx = QtGui.QComboBox()
         self.sizesl = QtGui.QSlider()
         self.sizesl.setOrientation(QtCore.Qt.Horizontal)
@@ -480,8 +480,8 @@ class TileEditor(QtGui.QMainWindow):
         self.sizesl.setMaximum(50)
         self.sizesl.setValue(25)
         self.sizesl.valueChanged.connect(self.changeSz)
-        self.wi = TileWidget2(self)        
-        
+        self.wi = TileWidget2(self)
+
         self.frame_lbl = QtGui.QLabel('None')
         self.act_next0 = cmn.Action(self, 'Last frame (F12)', 'first.png', self.nextFrame0, 'F12')
         self.act_prev0 = cmn.Action(self, 'First frame (F11)', 'last.png', self.prevFrame0, 'F11')
@@ -492,23 +492,23 @@ class TileEditor(QtGui.QMainWindow):
         self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'hand-point.png', self.gotoMove, 'F1')
         self.act_togglefast = cmn.Action(self, 'Toggle fast', '', self.toggleFast, 'F8')
         self.addAction(self.act_togglefast)
-        
+
         self.fastcb = QtGui.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
-        
+
         layout = cmn.HBox([self.cbx, self.sizesl, self.frame_lbl, cmn.ToolBtn(self.act_gotomove),
-                           cmn.ToolBtn(self.act_prev0), 
-                           cmn.ToolBtn(self.act_next0), 
-                           cmn.ToolBtn(self.act_prev),                           
+                           cmn.ToolBtn(self.act_prev0),
+                           cmn.ToolBtn(self.act_next0),
+                           cmn.ToolBtn(self.act_prev),
                            cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
-        
+
         #wrap = QtGui.QScrollArea()
         #wrap.setWidget(self.wi)
         wrap = self.wi
-        
+
         layout = cmn.VBox([layout, wrap])
         self.setCentralWidget(cmn.ensureWidget(layout))
-        
+
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('Menu')
         self.act_showsol = cmn.Action(self, 'Show solution', '', self.showSol, 'F9')
@@ -517,28 +517,28 @@ class TileEditor(QtGui.QMainWindow):
         fileMenu.addAction(self.act_opensol)
         fileMenu.addAction(self.act_showsol)
         fileMenu.addAction(self.act_savesol)
-        
+
         self.backup_timer = QtCore.QTimer()
         self.backup_timer.timeout.connect(self.doPlay)
         self.backup_timer.start(50)
         self.backup_timer2 = QtCore.QTimer()
         self.backup_timer2.timeout.connect(self.doPlayb)
         self.backup_timer2.start(50)
-        
+
         self.cbx.currentIndexChanged.connect(self.onChanged)
         self.cbx.addItems([str(i) for i in range(N_PROBLEMS)])
-        
-        if self.solname:                
+
+        if self.solname:
             self.show()
-            if self.solname != '$$$': 
+            if self.solname != '$$$':
                 self.showSol()
-    
+
     def changeSz(self, sz):
         global SIZE
         SIZE = sz
         self.wi.resetmins()
         self.update()
-    
+
     def loadpowers(self):
         with io.open('../../power-words.txt') as f:
             x = f.read().split('\n')
@@ -546,7 +546,7 @@ class TileEditor(QtGui.QMainWindow):
         for s in self.powerwords:
             assert(len(s) <= MAX_PLEN)
         #print(self.powerwords)
-    
+
     def calcScore(self, fname):
         with io.open(fname, 'r') as f:
             sols = json.loads(f.read())
@@ -556,13 +556,13 @@ class TileEditor(QtGui.QMainWindow):
         for sol in sols:
             id = sol["problemId"]
             if self.data['id'] != id:
-                self.cbx.setCurrentIndex(id)        
+                self.cbx.setCurrentIndex(id)
             seed = sol["seed"]
             self.seed = seed
-            tag = sol["tag"]                  
+            tag = sol["tag"]
                 #return
             print('Tag = %s, seed = %d' % (tag, seed))
-            
+
             self.startGameInternal(seed)
             self.cmds = sol['solution']
             #print(decode_cmd(self.cmds))
@@ -577,18 +577,18 @@ class TileEditor(QtGui.QMainWindow):
                 except:
                     print('Move = %d' % i)
                     raise
-            
+
             #print(len(self.frames))
             #self.setFrame(0)
             res.append((self.wi.state.score, self.wi.state.pscore))
         return res
-    
+
     def startPlay(self):
         self.act_playb.setChecked(False)
-        
+
     def startPlayback(self):
         self.act_play.setChecked(False)
-    
+
     def doSave(self):
         if not self.frames:
             return
@@ -597,80 +597,80 @@ class TileEditor(QtGui.QMainWindow):
         sol["seed"] = self.seed
         sol["tag"] = 'davar_visualizer'
         sol['solution'] = self.cmds
-        sol = [sol]        
+        sol = [sol]
         fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
         os.makedirs('saves', exist_ok=True)
         with io.open(fname, 'w') as f:
             f.write(json.dumps(sol))
         print('Saved')
-    
+
     def doOpen(self):
         fname = cmn.getOpenFileName(self, 'sol', 'Open solution', 'JSON Files (*.json)')
         if fname:
             self.solname = fname
         self.showSol()
-    
+
     def gotoMove(self):
         val, ok = QtGui.QInputDialog.getInt(self, 'Go to move', 'Go to move', self.cur_frame+1)
         if ok:
             self.setFrame(val-1)
-    
+
     def toggleFast(self):
         self.fastcb.toggle()
-        
+
     def onToggleFast(self):
         inter = 10 if self.fastcb.isChecked() else 50
         self.backup_timer.start(inter)
         self.backup_timer2.start(inter)
-    
+
     def startGameInternal(self, seed):
         self.seed = seed
         self.cmds = ''
         self.seq = [x % len(self.units) for x in gen_rand(seed, self.data['sourceLength'])]
-        
+
         self.wi.initPos()
         self.wi.placeUnit(self.seq, self.units)
-        
+
         self.frames = []
         self.frames.append(Frame(self.wi.cells, self.wi.state))
         self.cur_frame = 0
-    
-    def startGame(self):        
+
+    def startGame(self):
         seed = self.data['sourceSeeds'][0]
-        self.startGameInternal(seed)        
+        self.startGameInternal(seed)
         self.setFrame(0)
-    
+
     def printFrames(self):
         return
         print('!!')
         for x in self.frames:
             print(x.state)
-    
+
     def doCommand(self, letter):
         if not self.frames:
-            self.startGame()        
-        
+            self.startGame()
+
         if self.wi.state.cur_unit == None:
             print('No more units!')
             return
-        
+
         self.frames = self.frames[0 : self.cur_frame+1]
         self.printFrames()
-        
+
         self.cmds = self.cmds[0 : self.cur_frame]
 
         #history = self.cmds
         #if len(history) > MAX_PLEN:
-        #    history = history[-MAX_PLEN:]                
-        self.doCommandInternal(letter) 
+        #    history = history[-MAX_PLEN:]
+        self.doCommandInternal(letter)
         #print(self.cmds)
         self.cmds = self.cmds + letter
         self.printFrames()
         self.setFrame(self.cur_frame+1)
-    
+
     def doCommandInternal(self, letter, no_frame=False):
         c = cmd_lets[letter]
-        
+
         res = True
         if self.wi.canMove(c):
             self.wi.doMove(c)
@@ -681,7 +681,7 @@ class TileEditor(QtGui.QMainWindow):
                     res = False
         self.wi.updatePower(letter, self.powerwords)
         self.wi.state.move_num += 1
-                
+
         #print('???')
         if not no_frame:
             if self.wi.state.move_num % SKIP_FRAMES == 0:
@@ -689,11 +689,11 @@ class TileEditor(QtGui.QMainWindow):
             else:
                 self.frames.append(42)
         return res
-    
+
     def showSol(self):
         with io.open(self.solname, 'r') as f:
             sol = json.loads(f.read())
-            
+
         if len(sol) > 1:
             val, ok = QtGui.QInputDialog.getInt(self, 'Seed index', 'seed (0-%d)' % (len(sol)-1), 0)
             if not ok:
@@ -702,19 +702,19 @@ class TileEditor(QtGui.QMainWindow):
                 return
             sol = sol[val]
         else:
-            sol = sol[0]        
-        
-        
+            sol = sol[0]
+
+
         id = sol["problemId"]
         seed = sol["seed"]
         self.seed = seed
-        tag = sol["tag"]        
+        tag = sol["tag"]
         if self.data['id'] != id:
             print('wrong id, reloading')
             self.cbx.setCurrentIndex(id)
             #return
         print('Tag = %s, seed = %d' % (tag, seed))
-        
+
         self.startGameInternal(seed)
         self.cmds = sol['solution']
         #print(decode_cmd(self.cmds))
@@ -725,16 +725,16 @@ class TileEditor(QtGui.QMainWindow):
             if not self.doCommandInternal(c):
                 print('Cannot spawn after %d' % i)
                 break
-            
+
         #info = ''
         #score = self.frames[-1].state.score
         #pscore = self.frames[-1].state.pscore
         score = self.wi.state.score
         pscore = self.wi.state.pscore
         info = 'score = %d (%d + %d)' % (score + pscore, score, pscore)
-        
+
         pscore2 = 0
-        
+
         pwords = []
         for s in self.powerwords:
             pos = 0
@@ -755,23 +755,23 @@ class TileEditor(QtGui.QMainWindow):
         info += '\nused %d of %d' % (used, stock)
         if used < stock:
             info += ' CONGESTION!!!'
-                 
-        self.info_box.setData(info)        
+
+        self.info_box.setData(info)
         assert(pscore == pscore2)
-        self.setFrame(0) 
+        self.setFrame(0)
 
     def nextFrame0(self):
         self.setFrame(len(self.frames)-1)
-        
+
     def prevFrame0(self):
         self.setFrame(0)
-                        
+
     def nextFrame(self):
         self.setFrame(self.cur_frame + 1)
-        
+
     def prevFrame(self):
         self.setFrame(self.cur_frame - 1)
-        
+
     def setFrame(self, idx):
         n_frames = len(self.frames)
         if n_frames == 0:
@@ -784,12 +784,12 @@ class TileEditor(QtGui.QMainWindow):
             idx = 0
         if idx >= n_frames:
             idx = n_frames - 1
-        
+
         if idx == self.cur_frame and idx > 0:
-            return            
+            return
         if idx == self.cur_frame + 1 and idx > 0:
             #print(self.wi.state.move_num)
-            self.doCommandInternal(self.cmds[self.wi.state.move_num], True)            
+            self.doCommandInternal(self.cmds[self.wi.state.move_num], True)
         else:
             t = idx
             while self.frames[t] == 42:
@@ -799,8 +799,8 @@ class TileEditor(QtGui.QMainWindow):
             while t < idx:
                 self.doCommandInternal(self.cmds[self.wi.state.move_num], True)
                 t += 1
-                    
-        self.cur_frame = idx        
+
+        self.cur_frame = idx
         unit_idx = self.wi.state.unit_idx
         unit_ty = -1 if unit_idx >= len(self.seq) else self.seq[unit_idx] % len(self.units)
         score = self.wi.state.score
@@ -810,43 +810,43 @@ class TileEditor(QtGui.QMainWindow):
         self.act_next.setEnabled(idx + 1 < n_frames)
         self.act_prev.setEnabled(idx > 0)
         self.wi.update()
-        
-    
+
+
     def doPlay(self):
         if self.act_play.isChecked():
             if self.cur_frame == len(self.frames) - 1:
                 self.act_play.setChecked(False)
             self.nextFrame()
-            
+
     def doPlayb(self):
         if self.act_playb.isChecked():
             if self.cur_frame == 0:
                 self.act_playb.setChecked(False)
             self.prevFrame()
-        
-    
+
+
     def onChanged(self, idx):
-        with io.open(fname % idx, 'r') as f:            
+        with io.open(fname % idx, 'r') as f:
             data = json.loads(f.read())
-            
+
         self.data = data
         self.h = data['height']
-        self.w = data['width']        
+        self.w = data['width']
         self.units = [ Unit.load(x) for x in data['units'] ]
-            
+
         self.units_list.setData(self.units)
-        descr = 'id = %s, count = %s, games = %s' % (data['id'], data['sourceLength'], len(data['sourceSeeds']))                                                     
+        descr = 'id = %s, count = %s, games = %s' % (data['id'], data['sourceLength'], len(data['sourceSeeds']))
         self.statusBar().showMessage(descr)
         self.wi.setData(data['filled'], self.h, self.w)
         self.frames = []
         self.setFrame(0)
         self.update()
-    
+
     def closeEvent(self, event):
         s = QtCore.QSettings('PlatBox', 'Davar')
         s.setValue("mainwnd/geometry", self.saveGeometry())
         s.setValue('mainwnd/dockstate', self.saveState(0))
-        
+
 app = None
 
 def getScore(filename):
@@ -855,20 +855,20 @@ def getScore(filename):
         app = QtGui.QApplication(sys.argv)
     x = TileEditor('')
     return x.calcScore(filename)
-            
-        
+
+
 def main():
     #print(gen_rand(17, 10))
     #print(decode_cmd('ctulhu'))
     #print(getScore('../../solutions/solution_1_rip_2.json'))
     #print(getScore('../../solutions/solution_2_rip_2.json'))
     #return
-    
+
     #return
     app = QtGui.QApplication(sys.argv)
     fname = '$$$'
     if len(sys.argv) > 1:
-        fname = sys.argv[1]    
+        fname = sys.argv[1]
     _ = TileEditor(fname)
     sys.exit(app.exec_())
 
