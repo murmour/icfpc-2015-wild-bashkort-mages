@@ -37,20 +37,21 @@ using namespace PlatBox;
 #define PAR pair<int ,int>
 #define o_O 1000000000
 
-void __never(int a){printf("\nOPS %d", a);}
-#define ass(s) {if (!(s)) {__never(__LINE__);cout.flush();cerr.flush();abort();}}
+void __never(int a){fprintf(stderr, "\nOPS %d", a);}
+#define ass(s) {if (!(s)) {__never(__LINE__);cout.flush();cerr.flush();throw(42);}}
 
-#define NN 100
+//#define NN 50
 
-const int kNForCode = 1000;
-const int kPivotShift = 100;
+const int kNForCode = 100000;
+const int kPivotShift = 20000;
 
 #define CHECK_NEW_WORD
 
-string guten_tag = "topologic_1";
+string guten_tag = "hahahash_1";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
+int return_code = 0;
 
 typedef unsigned int uint;
 const int MAX_VERS = 2000;
@@ -61,6 +62,7 @@ const int n_letters = sizeof(letters);
 
 int a_next[MAX_VERS][n_letters];
 int a_mask[MAX_VERS][n_letters];
+int potential[MAX_VERS];
 
 int get_ver(const vector<int> lens, bool &added)
 {
@@ -68,6 +70,9 @@ int get_ver(const vector<int> lens, bool &added)
 	if (vers.find(lens) != vers.end()) return vers[lens];
 	ass(n_vers < MAX_VERS);
 	vers[lens] = n_vers;
+	int pot = 0;
+	FA(a,lens) pot += lens[a];
+	potential[n_vers] = pot;
 	added = true;
 	n_vers++;
 	return vers[lens];
@@ -128,7 +133,8 @@ void print_automata()
 
 struct STATE
 {
-	bool board[NN][NN];
+	//bool board[NN][NN];
+	vector< vector< int > > board;
 	int height, width;
 
 	PAR pivot;
@@ -139,7 +145,8 @@ struct STATE
 
 	void init( int w, int h )
 	{
-		CLR( board );
+		//CLR( board );
+		board = vector< vector< int > >( h, vector< int >( w, 0 ) );
 		height = h;
 		width = w;
 	}
@@ -388,7 +395,7 @@ struct STATE
 
 	void render()
 	{
-		if (quiet) return;
+		return;
 		FOR(a,0,height-1)
 		{
 			if (a&1) cout << " ";
@@ -460,7 +467,12 @@ struct xpos
 	}
 };
 
-map<xpos, LL> vals_memo;
+bool operator== (const xpos & A, const xpos & B)
+{
+	return A.x == B.x && A.y == B.y && A.rot == B.rot;
+}
+
+
 
 vector<int> found_words;
 
@@ -501,23 +513,11 @@ struct DP_STATE
 
 struct DP_VALUE
 {
-	/*int mx_len;
-	int sum;
-
-	DP_VALUE()
-	{
-		mx_len = 0;
-		sum = 0;
-	}
-	LL cost(LL end_value)
-	{
-		return (LL)end_value*10000000 + mx_len*100000 + sum;
-	}*/
-
 	LL cost;
 	int mx_len;
 	int sum;
 	int end_value;
+	int potential;
 	int nxt;
 	DP_VALUE()
 	{
@@ -529,11 +529,93 @@ struct DP_VALUE
 	}
 	void recalc_cost()
 	{
-		cost = (LL)end_value*100000 + mx_len*1000 + sum;
+		cost = (LL)end_value*100000 + mx_len*1000 + sum*10 + potential;
 	}
 };
 
-map<LL, DP_VALUE> mmemo;
+struct CanMove
+{
+	bool can[6];
+};
+
+#define HTABLE_LOG 22
+
+int get_hash( xpos tt )
+{
+	return ( ((tt.x*(o_O+7) + tt.y)*(o_O+9) + tt.rot) & ((1<<HTABLE_LOG)-1) );
+}
+
+int get_hash( LL tt )
+{
+	return (int)((tt*(o_O+7) + tt) & ((1<<HTABLE_LOG)-1));
+}
+
+template< typename KEY, typename VAL >
+struct HASHTABLE
+{
+	pair< KEY, pair< VAL, int > > * H;
+	int h_sz;
+	int hTable[1<<HTABLE_LOG];
+	int visited[1<<HTABLE_LOG];
+	int v_sz;
+	int sz;
+
+	HASHTABLE()
+	{
+		h_sz = 100000;
+		sz = 0;
+		v_sz = 0;
+		//H = new pair< KEY, pair< VAL, int > > [ h_sz ];
+		H = (pair< KEY, pair< VAL, int > > *) malloc( sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
+		FOR(a,0,(1<<HTABLE_LOG)-1) hTable[a] = -1;
+	}
+
+	void clear()
+	{
+		FOR(a,0,v_sz-1) hTable[visited[a]] = -1;
+		v_sz = 0;
+		sz = 0;
+	}
+
+	// note: repeating the add operation may broke the pointer
+	VAL * add( KEY key, VAL val = VAL() )
+	{
+		int ha = get_hash( key );
+		if (hTable[ha]==-1) visited[v_sz++] = ha;
+
+		pair< KEY, pair< VAL, int > > node = MP( key, MP( val, hTable[ha] ) );
+		if (sz == h_sz)
+		{
+			h_sz *= 2;
+			H = (pair< KEY, pair< VAL, int > > *) realloc( H, sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
+		}
+		H[sz] = node;
+		hTable[ha] = sz;
+		sz++;
+
+		return &(H[sz-1].second.first);
+	}
+
+	// note: add operation may broke the pointer
+	VAL * find( KEY key )
+	{
+		int ha = get_hash( key );
+
+		for ( int ind = hTable[ha]; ind != -1; ind = H[ind].second.second )
+			if ( H[ind].first == key )
+				return &H[ind].second.first;
+
+		return 0;
+	}
+};
+
+//map<xpos, CanMove> memo_canmove; // TODO
+//map<xpos, LL> vals_memo; // TODO
+//map<LL, DP_VALUE> mmemo; // TODO
+
+HASHTABLE< xpos, CanMove > memo_canmove;
+HASHTABLE< xpos, LL > vals_memo;
+HASHTABLE< LL, DP_VALUE > mmemo;
 
 
 inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
@@ -575,19 +657,20 @@ inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 }
 
 
-struct CanMove
-{
-	bool can[6];
-};
-
-map<xpos, CanMove> memo_canmove;
-
-
 void dfs_canmove( STATE & sta )
 {
 	xpos xp = xpos::Get(sta);
-	CanMove &res = memo_canmove[xp];
-	vals_memo[xp] = sta.get_value();
+
+	//CanMove &res = memo_canmove[xp];
+	//CanMove * res = memo_canmove.find( xp );
+	memo_canmove.add( xp ); // mark as visited
+
+	//vals_memo[xp] = sta.get_value();
+	//LL * val = vals_memo.find( xp );
+	LL *val = vals_memo.add( xp );
+	*val = sta.get_value();
+	CanMove res;
+
 	FOR(a,0,5)
 	{
 		res.can[a] = sta.can_move(a);
@@ -595,26 +678,30 @@ void dfs_canmove( STATE & sta )
 		{
 			int tmp = sta.rotate;
 			sta.do_move( a );
-			if (memo_canmove.find( xpos::Get(sta) ) == memo_canmove.end())
+			//if (memo_canmove.find( xpos::Get(sta) ) == memo_canmove.end())
+			if (!memo_canmove.find( xpos::Get(sta) ))
 				dfs_canmove( sta );
 			sta.undo_move( a );
 			ass( tmp == sta.rotate );
 		}
 	}
+	*memo_canmove.find(xp) = res;
 }
 
 DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 {
 	LL dpscode = dps.getcode(sta);
-	map<LL, DP_VALUE>::iterator it = mmemo.find(dpscode);
-	if (it != mmemo.end()) return it->second;
+	//map<LL, DP_VALUE>::iterator it = mmemo.find(dpscode);
+	//if (it != mmemo.end()) return it->second;
+	DP_VALUE * it = mmemo.find( dpscode );
+	if (it) return *it;
 
 	DP_VALUE v;
 	int nxt = -1;
 
 	xpos xp(dps.pivot.first, dps.pivot.second, dps.rotate);
-	ass ( memo_canmove.find(xp) != memo_canmove.end() );
-	CanMove can = memo_canmove[xp];
+	//ass ( memo_canmove.find(xp) != memo_canmove.end() );
+	CanMove can = *memo_canmove.find( xp );
 
 	FOR(move,0,5)
 	{
@@ -668,39 +755,18 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 				tmp.recalc_cost();
 				if (v.cost < tmp.cost)
 					v = tmp;
-
-
-				//DP_VALUE tmp = cur;
-				//dps2.node = a_next[dps.node][move*6+c];
-
-				//int msk = a_mask[dps.node][move*6+c];
-				/*FA(d,powerphrases) if ((msk>>d)&1)
-				{
-#ifdef CHECK_NEW_WORD
-					if (found_words[d] == 0)
-#endif
-						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
-					tmp.sum += SZ(powerphrases[d]);
-				}
-
-				LL value = get_dp( sta, dps2, tmp ) & ~0xffLL;
-				if (value > v)
-				{
-					v = value;
-					nxt = move*6+c;
-				}*/
 			}
-			//sta.undo_move( move );
 		}
 	}
 
-	LL xval = vals_memo[xp];
+	LL xval = *vals_memo.find( xp );
 
 	FOR(move,0,5)
 		if (!can.can[ move ])
 			FOR(c,0,5)
 			{
 				DP_VALUE tmp;
+				tmp.potential = potential[a_next[dps.node][move*6+c]];
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
@@ -710,40 +776,14 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
 					tmp.sum += SZ(powerphrases[d]);
 				}
-				tmp.end_value = (int)xval; //sta.get_value();
+				tmp.end_value = (int)xval;
 				tmp.nxt = move*6+c;
 				tmp.recalc_cost();
 				if (v.cost < tmp.cost)
 					v = tmp;
-
-
-				/*DP_VALUE tmp = cur;
-				int msk = a_mask[dps.node][move*6+c];
-				FA(d,powerphrases) if ((msk>>d)&1)
-				{
-#ifdef CHECK_NEW_WORD
-					if (found_words[d] == 0)
-#endif
-						tmp.mx_len = max( tmp.mx_len, SZ(powerphrases[d]) );
-					tmp.sum += SZ(powerphrases[d]);
-				}
-
-
-				LL value = tmp.cost(xval) << 8;
-				if (value > v)
-				{
-					v = value;
-					nxt = move*6+c;
-				}*/
 			}
-	//Map[dps] = v;
-	//was.erase( dps );
-	//v.recalc_cost();
-	//v = (v & ~0xffLL) + nxt;
-	mmemo[dpscode] = v;
-	//ass(nxt != -1);
-	//res = v;
-	//nextm[dpscode] = nxt;
+	//mmemo[dpscode] = v;
+	mmemo.add( dpscode, v );
 	return v;
 }
 
@@ -853,84 +893,84 @@ vector<OUTPUT> sol_internal( const char *path )
 	vector< OUTPUT > answer;
 	FA(z,inp.sourceSeeds)
 	{
-		STATE S;
-		S.init( inp.width, inp.height );
-		FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
-
-		rnd.set_seed( inp.sourceSeeds[z] );
-
-		OUTPUT out;
-		out.problemId = inp.id;
-		out.seed = inp.sourceSeeds[z];
-		out.tag = guten_tag;
-		out.solution = "";
-
-		found_words = vector<int>(powerphrases.size());
-
-		FOR(a,0,inp.sourceLength-1)
+		try
 		{
-			int ind = (rnd.next()) % SZ(inp.units);
-			PAR pivot;
-			vector< PAR > unit;
-			unit_to_unit( inp.units[ind], pivot, unit );
-			if (!S.spawn_unit( pivot, unit )) break;
-			S.render();
-			/*calc_all_end_positions( S );
-			int ends = SZ(end_pos);
-			int best = -1, best_value = -1;
-			FOR(b,0,ends-1)
-				if (values[b] > best_value)
-				{
-					best = b;
-					best_value = values[b];
-				}
-			ass( best>=0 );
-			S.do_commands( cmds[best] );
-			ass( S.get_value() == best_value );*/
-			calc_crazy_dp( S, 0 );
-			DP_STATE dps;
-			dps.pivot = S.pivot;
-			dps.rotate = S.rotate;
-			dps.rot_range = make_pair( S.rotate, S.rotate );
-			dps.from = 0;
-			dps.node = 0;
+			STATE S;
+			S.init( inp.width, inp.height );
+			FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
 
-			while(1)
+			rnd.set_seed( inp.sourceSeeds[z] );
+
+			OUTPUT out;
+			out.problemId = inp.id;
+			out.seed = inp.sourceSeeds[z];
+			out.tag = guten_tag;
+			out.solution = "";
+
+			found_words = vector<int>(powerphrases.size());
+
+			int prev_node = 0;
+
+			FOR(a,0,inp.sourceLength-1)
 			{
-				//int nxt = nextm[dps.getcode(S)];
-				//int nxt = mmemo[dps.getcode(S)] & 0xff;
-				//out.solution.push_back( letters[nxt] );
+				//ass( z!=1 );
+				int ind = (rnd.next()) % SZ(inp.units);
+				PAR pivot;
+				vector< PAR > unit;
+				unit_to_unit( inp.units[ind], pivot, unit );
+				if (!S.spawn_unit( pivot, unit )) break;
+				S.render();
+				calc_crazy_dp( S, prev_node );
+				DP_STATE dps;
+				dps.pivot = S.pivot;
+				dps.rotate = S.rotate;
+				dps.rot_range = make_pair( S.rotate, S.rotate );
+				dps.from = 0;
+				dps.node = prev_node;
 
-				int nxt = mmemo[dps.getcode(S)].nxt;
-				out.solution.push_back( letters[nxt] );
-
-				// checking powerwords
-				for (uint j = 0; j < powerphrases.size(); j++)
+				while(1)
 				{
-					u32 plen = powerphrases[j].size();
-					if (out.solution.size() < plen) continue;
-					if (powerphrases[j] == out.solution.substr(out.solution.size()-plen, plen)) found_words[j]++;
+					int nxt = mmemo.find(dps.getcode(S))->nxt;
+					out.solution.push_back( letters[nxt] );
+
+					// checking powerwords
+					for (uint j = 0; j < powerphrases.size(); j++)
+					{
+						u32 plen = powerphrases[j].size();
+						if (out.solution.size() < plen) continue;
+						if (powerphrases[j] == out.solution.substr(out.solution.size()-plen, plen)) found_words[j]++;
+					}
+
+					int move = nxt/6;
+					if (S.can_move( move ))
+						S.do_move( move );
+					else
+					{
+						prev_node = a_next[dps.node][nxt];
+						break;
+					}
+					DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
+					dps2.node = a_next[dps.node][nxt];
+					dps = dps2;
 				}
 
-				int move = nxt/6;
-				if (S.can_move( move ))
-					S.do_move( move );
-				else break;
-				DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
-				dps2.node = a_next[dps.node][nxt];
-				dps = dps2;
+				S.lock_unit();
+				fprintf(stderr, "%d, %d states\n", a, (int)mmemo.sz);
+				S.render();
+
+				//out.solution += cmds[best];
 			}
-
-			S.lock_unit();
-			fprintf(stderr, "%d, %d states\n", a, (int)mmemo.size());
-			S.render();
-
-			//out.solution += cmds[best];
+			answer.push_back( out );
+			fprintf(stderr, "Power:");
+			for (u32 i = 0; i < powerphrases.size(); i++) fprintf(stderr, " %d", found_words[i]);
+			fprintf(stderr, "\n");
 		}
-		answer.push_back( out );
-		fprintf(stderr, "Power:");
-		for (u32 i = 0; i < powerphrases.size(); i++) fprintf(stderr, " %d", found_words[i]);
-		fprintf(stderr, "\n");
+		catch (...)
+		{
+			fprintf(stderr, "Crash!\n");
+			return_code++;
+			if (!quiet) abort();
+		}
 	}
 
 	return answer;
@@ -969,7 +1009,8 @@ int main(int argc, char** argv)
 		powerphrases.push_back("ia! ia!");
 		powerphrases.push_back("r'lyeh");
 		powerphrases.push_back("yuggoth");
-		powerphrases.push_back("cthulhu");
+		//powerphrases.push_back("cthulhu");
+		//powerphrases.push_back("ph'nglui mglw'nafh cthulhu r'lyeh wgah'nagl fhtagn!");
 
 		build_automata();
 		//print_automata();
@@ -980,7 +1021,7 @@ int main(int argc, char** argv)
 
 		//serializeJson( TMP() );
 
-		quiet = true;
+		//quiet = true;
 		//FOR(a,0,23) sol( a );
 		sol( 14 );
 
@@ -1005,5 +1046,5 @@ int main(int argc, char** argv)
 
 	}
 
-	return 0;
+	return return_code;
 }
