@@ -53,7 +53,7 @@ int id_num = 0;
 #define CHECK_NEW_WORD
 //#define RENDERX
 
-string guten_tag = "rdpack_2";
+string guten_tag = "shaman_1";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -440,9 +440,9 @@ struct STATE
 					}
 				}
 				// 1-holes
-				for (int j = 0; j + 1 < width; j++) if (!board[i][j] && board[i][j-1] && board[i][j+1]) re -= 150;
+				for (int j = 1; j + 1 < width; j++) if (!board[i][j] && board[i][j-1] && board[i][j+1]) re -= 150;
 				// 2-holes
-				for (int j = 0; j + 2 < width; j++) if (!board[i][j] && !board[i][j+1] && board[i][j-1] && board[i][j+2]) re -= 150;
+				for (int j = 1; j + 2 < width; j++) if (!board[i][j] && !board[i][j+1] && board[i][j-1] && board[i][j+2]) re -= 150;
 
 				if (!board[i][0] && board[i][1]) re -= 160;
 				if (!board[i][width-1] && board[i][width-2]) re -= 160;
