@@ -21,9 +21,10 @@ def get_our_scores():
                                    scr['power_score'], scr['tags'])
                 break
 
-    for s in scores:
-        print(s, scores[s])
+    return scores
 
 
 if __name__ == '__main__':
-    get_our_scores()
+    scores = get_our_scores()
+    for s in scores:
+        print(s, scores[s])

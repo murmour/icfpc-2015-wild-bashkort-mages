@@ -21,4 +21,5 @@ solutions
 data
 log_*
 temp.json
+discovery.json
 rankings.js
