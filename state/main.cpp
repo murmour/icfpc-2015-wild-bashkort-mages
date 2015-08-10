@@ -45,9 +45,15 @@ void __never(int a){fprintf(stderr, "\nOPS %d", a);}
 const int kNForCode = 100000;
 const int kPivotShift = 20000;
 
-#define CHECK_NEW_WORD
+int input_seed = -1;
+int param1 = 0;
+int param2 = 0;
+int id_num = 0;
 
-string guten_tag = "tokamak_1";
+#define CHECK_NEW_WORD
+//#define RENDERX
+
+string guten_tag = "rdpack_2";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -167,6 +173,10 @@ struct STATE
 	int board_value;
 	vector< int > filled;
 	int holes;
+	int score, ls_old;
+
+	typedef  int (STATE::*Evaluator)();
+	static Evaluator valf;
 
 	void init( int w, int h )
 	{
@@ -175,6 +185,8 @@ struct STATE
 		filled = vector< int >( h, 0 );
 		height = h;
 		width = w;
+		score = 0;
+		ls_old = 0;
 	}
 
 	void move_pnt( PAR & p, int dir, int d )
@@ -300,10 +312,7 @@ struct STATE
 		board_value = 0;
 		FOR(a,0,height-1) FOR(b,0,width-1)
 			if (board[a][b])
-			{
-				board_value++;
-				if (a<3) board_value-=10;
-			}
+				board_value ++;
 		FOR(a,0,height-1)
 		{
 			filled[a] = 0;
@@ -333,6 +342,8 @@ struct STATE
 			ass( !board[unit[a].Y][unit[a].X] );
 			board[unit[a].Y][unit[a].X] = true;
 		}
+		int lines = 0;
+
 		DFOR(a,height-1,0)
 		{
 			bool flag = true;
@@ -347,14 +358,152 @@ struct STATE
 				FOR(c,0,width-1)
 					board[0][c] = false;
 				a++;
+				lines++;
 			}
 		}
 
+		/*
+        move_score = points + line_bonus
+          where
+          points = size + 100 * (1 + ls) * ls / 2
+          line_bonus  = if ls_old > 1
+                        then floor ((ls_old - 1) * points / 10)
+                        else 0
+		 */
+
+		int points = (int)unit.size() + 100 * (1 + lines) * lines / 2;
+		if (ls_old > 1)
+			points += (ls_old - 1) * points / 10;
+		ls_old = lines;
+		score += points;
 		// recalc constants for value
 		recalc_consts();
 	}
 
+	bool valid(PAR p)
+	{
+		return p.first >= 0 && p.second >= 0 && p.first < width && p.second < height;
+	}
+
 	int get_value()
+	{
+		return (this->*valf)();
+	}
+
+	int get_value1()
+	{
+			int re = 0;
+			FOR(a,0,height-1) FOR(b,0,width-1)
+				if (board[a][b])
+					re += a*3+1;
+			FA(a,unit) re += unit[a].Y*3+1;
+			int lines = 0;
+
+			FOR(a,0,height-1)
+			{
+				bool flag = true;
+				FOR(b,0,width-1)
+					if (!board[a][b])
+					{
+						bool flag2 = false;
+						FA(c,unit)
+							if (unit[c] == make_pair( b, a ))
+								flag2 = true;
+						if (!flag2) flag = false;
+					}
+				if (flag) lines++;
+			}
+			re += lines*lines*width*100;
+
+			FA(d, unit) board[unit[d].second][unit[d].first] = true;
+			/*
+			for (int i = 0; i < height; i++)
+			{
+				cnts[i] = 0;
+				for (int j = 0; j < width; j++) if (board[i][j]) cnts[i]++;
+			}
+			*/
+			for (int i = 1; i < height; i++)
+			{
+				for (int j = 0; j < width; j++) if (!board[i][j])
+				{
+					PAR p1(j, i);
+					move_pnt(p1, 4, 1);
+					bool f1 = !valid(p1) || board[p1.second][p1.first];
+					if (f1)
+					{
+						PAR p2(j, i);
+						move_pnt(p2, 5, 1);
+						bool f2 = !valid(p2) || board[p2.second][p2.first];
+						if (f2)
+							re -= 200;
+					}
+				}
+				// 1-holes
+				for (int j = 0; j + 1 < width; j++) if (!board[i][j] && board[i][j-1] && board[i][j+1]) re -= 150;
+				// 2-holes
+				for (int j = 0; j + 2 < width; j++) if (!board[i][j] && !board[i][j+1] && board[i][j-1] && board[i][j+2]) re -= 150;
+
+				if (!board[i][0] && board[i][1]) re -= 160;
+				if (!board[i][width-1] && board[i][width-2]) re -= 160;
+
+				if (!board[i][0] && !board[i][1] && board[i][2]) re -= 160;
+				if (!board[i][width-1] && !board[i][width-2] && board[i][width-3]) re -= 160;
+			}
+			FA(d, unit) board[unit[d].second][unit[d].first] = false;
+
+			// vertical placement is bad
+			int miy = o_O, may = -o_O;
+			for (u32 i = 0; i < unit.size(); i++) {
+				miy = min(miy, unit[i].second);
+				may = max(may, unit[i].second);
+			}
+			re -= (may - miy) * 500;
+
+			// "singularities"
+			int sings = 0;
+			for (int i = 1; i < height; i++)
+			{
+				for (int j = 1; j + 1 < width; j++) if (board[i][j] && !board[i][j-1] && !board[i][j+1]) sings ++;
+			}
+			//if (sings > 2) re -= sings * 100;
+
+			FOR(a,0,height-1)
+				FOR(b,0,width-1)
+					if (board[a][b])
+						FOR(c,0,5)
+						{
+							PAR p = make_pair( b, a );
+							move_pnt( p, c, 1 );
+							bool flag = true;
+							FA(d,unit)
+								if (unit[d] == p)
+									flag = false;
+							if (flag)
+								if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
+									if (!board[p.Y][p.X])
+										re -= 2;
+						}
+
+			FA(a,unit) FOR(b,0,5)
+			{
+				PAR p = unit[a];
+				move_pnt( p, b, 1 );
+				bool flag = true;
+				FA(c,unit)
+					if (unit[c] == p)
+						flag = false;
+				if (flag)
+					if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
+						if (!board[p.Y][p.X])
+							re -= 2;
+			}
+
+			return re;
+	}
+
+
+	int get_value0()
 	{
 		int re = 0;
 		re += board_value*3+1;
@@ -433,10 +582,10 @@ struct STATE
 		return true;
 	}
 
-	void render()
+	void render(LL x = -1)
 	{
 		//return;
-		cout << get_value() << "\n";
+		cout << "raw: " << get_value() << " combined: " << x << "\n";
 		FOR(a,0,height-1)
 		{
 			if (a&1) cout << " ";
@@ -454,6 +603,8 @@ struct STATE
 		cout << "\n";
 	}
 };
+
+STATE::Evaluator STATE::valf = &STATE::get_value0;
 
 struct CELL
 {
@@ -489,8 +640,9 @@ struct OUTPUT
 	unsigned int seed;
 	string tag;
 	string solution;
+	int my_score;
 
-	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD_END
+	FLD_BEGIN FLD(problemId) FLD(seed) FLD(tag) FLD(solution) FLD(my_score) FLD_END
 };
 
 INPUT inp;
@@ -600,19 +752,11 @@ int get_hash( LL tt )
 	return (int)((tt*(o_O+7) + tt) & ((1<<HTABLE_LOG)-1));
 }
 
-int get_hash( vector< PAR > & v )
-{
-	int re = 0;
-	FA(a,v) re = re*(o_O+7) + v[a].first*10007 + v[a].second + 1;
-	return ( re & ((1<<HTABLE_LOG)-1) );
-}
-
 template< typename KEY, typename VAL >
 struct HASHTABLE
 {
-	//pair< KEY, pair< VAL, int > > * H;
-	vector< pair< KEY, pair< VAL, int > > > H;
-	//int h_sz;
+	pair< KEY, pair< VAL, int > > * H;
+	int h_sz;
 	int hTable[1<<HTABLE_LOG];
 	int visited[1<<HTABLE_LOG];
 	int v_sz;
@@ -620,11 +764,11 @@ struct HASHTABLE
 
 	HASHTABLE()
 	{
-		//h_sz = 1000;
+		h_sz = 100000;
 		sz = 0;
 		v_sz = 0;
 		//H = new pair< KEY, pair< VAL, int > > [ h_sz ];
-		//H = (pair< KEY, pair< VAL, int > > *) malloc( sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
+		H = (pair< KEY, pair< VAL, int > > *) malloc( sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
 		FOR(a,0,(1<<HTABLE_LOG)-1) hTable[a] = -1;
 	}
 
@@ -642,12 +786,12 @@ struct HASHTABLE
 		if (hTable[ha]==-1) visited[v_sz++] = ha;
 
 		pair< KEY, pair< VAL, int > > node = MP( key, MP( val, hTable[ha] ) );
-		if (sz == SZ(H)) H.push_back( node );
-		/*{
+		if (sz == h_sz)
+		{
 			h_sz *= 2;
 			H = (pair< KEY, pair< VAL, int > > *) realloc( H, sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
-		}*/
-		else H[sz] = node;
+		}
+		H[sz] = node;
 		hTable[ha] = sz;
 		sz++;
 
@@ -675,9 +819,6 @@ HASHTABLE< xpos, CanMove > memo_canmove;
 HASHTABLE< xpos, LL > vals_memo;
 HASHTABLE< LL, DP_VALUE > mmemo;
 HASHTABLE< xpos, int > memo_turn2;
-HASHTABLE< xpos, int > memo_turn3;
-HASHTABLE< vector< PAR >, LL > memo_end_turn1;
-HASHTABLE< vector< PAR >, LL > memo_end_turn2;
 
 inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 {
@@ -717,10 +858,10 @@ inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 	return dps2;
 }
 
-LL get_next2_move_value( STATE & sta )
+LL get_next_move_value( STATE & sta )
 {
 	xpos xp = xpos::Get(sta);
-	memo_turn3.add( xp );
+	memo_turn2.add( xp );
 
 	bool flag = false;
 	LL re = -o_O;
@@ -730,115 +871,20 @@ LL get_next2_move_value( STATE & sta )
 		{
 			int tmp = sta.rotate;
 			sta.do_move( a );
-			if (!memo_turn3.find( xpos::Get(sta) ))
-				re = max( re, get_next2_move_value( sta ) );
+			if (!memo_turn2.find( xpos::Get(sta) ))
+				re = max( re, get_next_move_value( sta ) );
 			sta.undo_move( a );
 			ass( tmp == sta.rotate );
 		}
 		else flag = true;
 	}
 	if (flag)
+	{
+		//sta.render();
 		re = max( re, (LL)sta.get_value() );
-
-	return re;
-}
-
-vector< LL > move2_values;
-
-void estimate_next_move_value( STATE & sta )
-{
-	xpos xp = xpos::Get(sta);
-	memo_turn2.add( xp );
-
-	bool flag = false;
-	FOR(a,0,5)
-	{
-		if (sta.can_move( a ))
-		{
-			int tmp = sta.rotate;
-			sta.do_move( a );
-			if (!memo_turn2.find( xpos::Get(sta) ))
-				estimate_next_move_value( sta );
-			sta.undo_move( a );
-			ass( tmp == sta.rotate );
-		}
-		else flag = true;
-	}
-	if (flag)
-	{
-		if (sta.width * sta.height <= 160)
-		{
-			vector< PAR > uni = sta.unit;
-			sort( uni.begin(), uni.end() );
-			LL * vava = memo_end_turn2.find( uni );
-			if (!vava)
-			{
-				LL value = sta.get_value();
-				move2_values.push_back( value );
-				memo_end_turn2.add( uni, value );
-			}
-		}
-	}
-}
-
-LL get_next_move_value( STATE & sta, LL score )
-{
-	xpos xp = xpos::Get(sta);
-	memo_turn2.add( xp );
-
-	bool flag = false;
-	LL re = -o_O;
-	FOR(a,0,5)
-	{
-		if (sta.can_move( a ))
-		{
-			int tmp = sta.rotate;
-			sta.do_move( a );
-			if (!memo_turn2.find( xpos::Get(sta) ))
-				re = max( re, get_next_move_value( sta, score ) );
-			sta.undo_move( a );
-			ass( tmp == sta.rotate );
-		}
-		else flag = true;
-	}
-	if (flag)
-	{
-		if (sta.width * sta.height <= 160)
-		{
-			vector< PAR > uni = sta.unit;
-			sort( uni.begin(), uni.end() );
-			LL * vava = memo_end_turn2.find( uni );
-			if (!vava)
-			{
-				LL value = sta.get_value() + 40;
-				if (value > score + 40)
-				{
-					STATE S2 = sta;
-					S2.lock_unit();
-					int ind = (rnd.cur(2)) % SZ(inp.units);
-					PAR pivot;
-					vector< PAR > unit;
-					unit_to_unit( inp.units[ind], pivot, unit );
-
-					if (S2.spawn_unit( pivot, unit ))
-					{
-						memo_turn3.clear();
-						value = max( value, get_next2_move_value( S2 ) );
-					}
-					else value = -o_O;
-
-					re = max( re, value );
-				}
-				memo_end_turn2.add( uni, value );
-			}
-			else re = max( re, *vava );
-		}
-		else
-		{
-			re = max( re, (LL)sta.get_value() );
-		}
 	}
 
+	//cout << re << " ";
 	return re;
 }
 
@@ -872,43 +918,39 @@ void dfs_canmove( STATE & sta )
 	FOR(a,0,5)
 		if (!res.can[a])
 		{
+			LL xval;
 			if (sta.width * sta.height <= 250)
 			{
-				vector< PAR > uni = sta.unit;
-				sort( uni.begin(), uni.end() );
-				LL * vava = memo_end_turn1.find( uni );
-				if (!vava)
+				STATE S2 = sta;
+				S2.lock_unit();
+				int ind = (rnd.cur(1)) % SZ(inp.units);
+				PAR pivot;
+				vector< PAR > unit;
+				unit_to_unit( inp.units[ind], pivot, unit );
+				LL value = sta.get_value() + 80;
+				if (S2.spawn_unit( pivot, unit ))
 				{
-					STATE S2 = sta;
-					S2.lock_unit();
-					int ind = (rnd.cur(1)) % SZ(inp.units);
-					PAR pivot;
-					vector< PAR > unit;
-					unit_to_unit( inp.units[ind], pivot, unit );
-					LL value = sta.get_value() + 80;
-					if (S2.spawn_unit( pivot, unit ))
-					{
-						memo_turn2.clear();
-						memo_end_turn2.clear();
-						move2_values.clear();
-						estimate_next_move_value( S2 );
-						sort( move2_values.begin(), move2_values.end() );
-						memo_turn2.clear();
-						memo_end_turn2.clear();
-						LL limit = -o_O;
-						if ( SZ(move2_values)>0 )
-							limit = move2_values[ max(0,SZ(move2_values)-10) ];
-						value = max( value, get_next_move_value( S2, limit ) );
-					}
-					else value = -o_O;
-					//cerr << value << " ";
-					vals_memo.add( xp, value );
-					//cout << "==========================\n\n";
-					memo_end_turn1.add( uni, value );
+					memo_turn2.clear();
+					value = max( value, get_next_move_value( S2 ) );
 				}
-				else vals_memo.add( xp, *vava );
+				else value = -o_O;
+				//cerr << value << " ";
+				LL *val = vals_memo.add( xp );
+				*val = value; // sta.get_value();
+				xval = value;
+				//cout << "==========================\n\n";
 			}
-			else vals_memo.add( xp, sta.get_value() );
+			else
+			{
+				LL *val = vals_memo.add( xp );
+				*val = sta.get_value();
+				xval = *val;
+			}
+
+#ifdef RENDERX
+			sta.render(xval);
+#endif
+
 			break;
 		}
 	*memo_canmove.find(xp) = res;
@@ -1024,7 +1066,6 @@ void calc_crazy_dp( STATE & sta, int starting_node )
 	mmemo.clear();
 	vals_memo.clear();
 	memo_canmove.clear();
-	memo_end_turn1.clear();
 	dfs_canmove(sta);
 
 	DP_STATE dps;
@@ -1082,6 +1123,119 @@ void calc_all_end_positions( STATE & sta )
 	dfs( sta );
 }
 
+int prob;
+
+OUTPUT solve_with_evaluator( STATE::Evaluator ev, int z )
+{
+	STATE::valf = ev;
+	STATE S;
+	S.init( inp.width, inp.height );
+	FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
+	S.recalc_consts();
+
+	rnd.set_seed( inp.sourceSeeds[z] );
+
+	OUTPUT out;
+	out.problemId = inp.id;
+	out.seed = inp.sourceSeeds[z];
+	out.tag = guten_tag;
+	out.solution = "";
+
+	found_words = vector<int>(powerphrases.size());
+
+	int prev_node = 0;
+
+	FOR(a,0,inp.sourceLength-1)
+	{
+		//ass( z!=1 );
+		int ind = (rnd.cur()) % SZ(inp.units);
+		PAR pivot;
+		vector< PAR > unit;
+		unit_to_unit( inp.units[ind], pivot, unit );
+		if (!S.spawn_unit( pivot, unit )) break;
+		//S.render();
+#ifdef RENDERX
+		cout << a << " ================\n"; // renderx
+#endif
+		calc_crazy_dp( S, prev_node );
+		DP_STATE dps;
+		dps.pivot = S.pivot;
+		dps.rotate = S.rotate;
+		dps.rot_range = make_pair( S.rotate, S.rotate );
+		dps.from = 0;
+		dps.node = prev_node;
+
+		while(1)
+		{
+			int nxt = mmemo.find(dps.getcode(S))->nxt;
+			out.solution.push_back( letters[nxt] );
+
+			// checking powerwords
+			for (uint j = 0; j < powerphrases.size(); j++)
+			{
+				u32 plen = powerphrases[j].size();
+				if (out.solution.size() < plen) continue;
+				if (powerphrases[j] == out.solution.substr(out.solution.size()-plen, plen)) found_words[j]++;
+			}
+
+			int move = nxt/6;
+			if (S.can_move( move ))
+				S.do_move( move );
+			else
+			{
+				prev_node = a_next[dps.node][nxt];
+				break;
+			}
+			DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
+			dps2.node = a_next[dps.node][nxt];
+			dps = dps2;
+		}
+
+		S.lock_unit();
+		fprintf(stderr, "%d, %d, %d, %d states\n", prob, z, a, (int)mmemo.sz);
+		//S.render();
+
+		//out.solution += cmds[best];
+
+		rnd.ind++;
+	}
+
+	int score = S.score;
+
+	for (u32 i = 0; i < powerphrases.size(); i++) {
+		int k = found_words[i];
+		if (k) score += 300 + 2 * k * powerphrases[i].size();
+	}
+	out.my_score = score;
+	return out;
+}
+
+void update_sol(STATE::Evaluator valf, int z, int &best_score, OUTPUT &best)
+{
+	try
+	{
+		OUTPUT cur = solve_with_evaluator(valf, z);
+
+		fprintf(stderr, "Power:");
+		for (u32 i = 0; i < powerphrases.size(); i++) fprintf(stderr, " %d", found_words[i]);
+		fprintf(stderr, "\n");
+		fprintf(stderr, "Score: %d\n", cur.my_score);
+		fprintf(stderr, "\n");
+
+		if (cur.my_score > best_score)
+		{
+			best_score = cur.my_score;
+			best = cur;
+		}
+	}
+	catch (...)
+	{
+		fprintf(stderr, "Crash!\n");
+		return_code++;
+		if (!quiet) abort();
+	}
+}
+
 vector<OUTPUT> sol_internal( const char *path )
 {
 
@@ -1102,89 +1256,19 @@ vector<OUTPUT> sol_internal( const char *path )
 
 
 	vector< OUTPUT > answer;
-	FA(z,inp.sourceSeeds)
+	int best_score = -1;
+	OUTPUT best;
+	int area = inp.height * inp.width;
+
+	FA(z,inp.sourceSeeds) if (input_seed == -1 || input_seed == z)
 	{
-		try
-		{
-			STATE S;
-			S.init( inp.width, inp.height );
-			FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
-			S.recalc_consts();
 
-			rnd.set_seed( inp.sourceSeeds[z] );
+		if (area <= 250)
+			update_sol(&STATE::get_value1, z, best_score, best);
 
-			OUTPUT out;
-			out.problemId = inp.id;
-			out.seed = inp.sourceSeeds[z];
-			out.tag = guten_tag;
-			out.solution = "";
+		update_sol(&STATE::get_value0, z, best_score, best);
 
-			found_words = vector<int>(powerphrases.size());
-
-			int prev_node = 0;
-
-			FOR(a,0,inp.sourceLength-1)
-			{
-				//ass( z!=1 );
-				int ind = (rnd.cur()) % SZ(inp.units);
-				PAR pivot;
-				vector< PAR > unit;
-				unit_to_unit( inp.units[ind], pivot, unit );
-				if (!S.spawn_unit( pivot, unit )) break;
-				//S.render();
-				calc_crazy_dp( S, prev_node );
-				DP_STATE dps;
-				dps.pivot = S.pivot;
-				dps.rotate = S.rotate;
-				dps.rot_range = make_pair( S.rotate, S.rotate );
-				dps.from = 0;
-				dps.node = prev_node;
-
-				while(1)
-				{
-					int nxt = mmemo.find(dps.getcode(S))->nxt;
-					out.solution.push_back( letters[nxt] );
-
-					// checking powerwords
-					for (uint j = 0; j < powerphrases.size(); j++)
-					{
-						u32 plen = powerphrases[j].size();
-						if (out.solution.size() < plen) continue;
-						if (powerphrases[j] == out.solution.substr(out.solution.size()-plen, plen)) found_words[j]++;
-					}
-
-					int move = nxt/6;
-					if (S.can_move( move ))
-						S.do_move( move );
-					else
-					{
-						prev_node = a_next[dps.node][nxt];
-						break;
-					}
-					DP_STATE dps2 = do_dp_move( S, dps, nxt/6 );
-					dps2.node = a_next[dps.node][nxt];
-					dps = dps2;
-				}
-
-				S.lock_unit();
-				fprintf(stderr, "%d, %d, %d, %d states\n", inp.id, z, a, (int)mmemo.sz);
-				//S.render();
-
-				//out.solution += cmds[best];
-
-				rnd.ind++;
-			}
-			answer.push_back( out );
-			fprintf(stderr, "Power:");
-			for (u32 i = 0; i < powerphrases.size(); i++) fprintf(stderr, " %d", found_words[i]);
-			fprintf(stderr, "\n");
-		}
-		catch (...)
-		{
-			fprintf(stderr, "Crash!\n");
-			return_code++;
-			if (!quiet) abort();
-		}
+		answer.push_back( best );
 	}
 
 	return answer;
@@ -1192,6 +1276,7 @@ vector<OUTPUT> sol_internal( const char *path )
 
 void sol (int problem)
 {
+	prob = problem;
 	cerr << "problem " << problem << "\n";
 	char path[1000];
 	sprintf( path, "../data/problems/problem_%d.json", problem );
@@ -1212,23 +1297,39 @@ int main(int argc, char** argv)
 	System::ParseArgs(argc, argv);
 	powerphrases = System::GetArgValues("p");
 	vector<string> files = System::GetArgValues("f");
+	if (System::HasArg("seed"))
+	{
+		input_seed = atoi(System::GetArgValue("seed").c_str());
+	}
+	if (System::HasArg("p1"))
+	{
+		param1 = atoi(System::GetArgValue("p1").c_str());
+	}
+	if (System::HasArg("p2"))
+	{
+		param2 = atoi(System::GetArgValue("p2").c_str());
+	}
+	if (System::HasArg("id"))
+	{
+		id_num = atoi(System::GetArgValue("id").c_str());
+	}
 
 	FOR(a,0,35) move_by_chr[(int)letters[a]] = a/6;
 
 	if (files.empty())
 	{
-		//powerphrases.push_back("abaed");
-		//powerphrases.push_back("aed");
 		powerphrases.push_back("ei!");
 		powerphrases.push_back("ia! ia!");
 		powerphrases.push_back("r'lyeh");
 		powerphrases.push_back("yuggoth");
+		powerphrases.push_back("necronomicon");
 		powerphrases.push_back("planet 10");
 		powerphrases.push_back("monkeyboy");
-		powerphrases.push_back("yoyodyne");
 		powerphrases.push_back("john bigboote");
-		powerphrases.push_back("necronomicon");
-		powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
+		powerphrases.push_back("yoyodyne");
+
+
+		//powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
 
 		build_automata();
 		//print_automata();
@@ -1241,7 +1342,7 @@ int main(int argc, char** argv)
 
 		//quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 23 );
+		sol( id_num );
 
 		cerr << clock() << "\n";
 	} else {
