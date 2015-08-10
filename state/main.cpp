@@ -47,7 +47,7 @@ const int kPivotShift = 20000;
 
 #define CHECK_NEW_WORD
 
-string guten_tag = "hahahash_2";
+string guten_tag = "hahahash_6";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -163,10 +163,16 @@ struct STATE
 
 	int max_rotate;
 
+	// constants for value
+	int board_value;
+	vector< int > filled;
+	int holes;
+
 	void init( int w, int h )
 	{
 		//CLR( board );
 		board = vector< vector< int > >( h, vector< int >( w, 0 ) );
+		filled = vector< int >( h, 0 );
 		height = h;
 		width = w;
 	}
@@ -289,6 +295,34 @@ struct STATE
 		}
 	}
 
+	void recalc_consts()
+	{
+		board_value = 0;
+		FOR(a,0,height-1) FOR(b,0,width-1)
+			if (board[a][b])
+				board_value ++;
+		FOR(a,0,height-1)
+		{
+			filled[a] = 0;
+			FOR(b,0,width-1)
+				if (board[a][b])
+					filled[a]++;
+		}
+		holes = 0;
+		FOR(a,0,height-1)
+			FOR(b,0,width-1)
+				if (!board[a][b])
+					FOR(c,0,5)
+					{
+						PAR p = make_pair( b, a );
+						move_pnt( p, c, 1 );
+						if (!(0<=p.X && p.X<width && 0<=p.Y && p.Y<height))
+							holes++;
+						else if (board[p.Y][p.X])
+							holes++;
+					}
+	}
+
 	void lock_unit()
 	{
 		FA(a,unit)
@@ -312,79 +346,48 @@ struct STATE
 				a++;
 			}
 		}
+
+		// recalc constants for value
+		recalc_consts();
 	}
 
 	int get_value()
 	{
 		int re = 0;
-		FOR(a,0,height-1) FOR(b,0,width-1)
-			if (board[a][b])
-				re += a*3+1;
-		FA(a,unit) re += unit[a].Y*3+1;
+		re += board_value*3+1;
+		FA(a,unit)
+		{
+			re += unit[a].Y*3+1;
+			/*if (unit[a].Y < 10) re -= 1;
+			if (unit[a].Y < 5) re -= 1;
+			if (unit[a].Y < 3) re -= 1;
+			if (unit[a].Y < 2) re -= 1;*/
+		}
 
 		int lines = 0;
-		FOR(a,0,height-1)
+		FA(a,unit)
 		{
-			bool flag = true;
-			FOR(b,0,width-1)
-				if (!board[a][b])
-				{
-					bool flag2 = false;
-					FA(c,unit)
-						if (unit[c] == make_pair( b, a ))
-							flag2 = true;
-					if (!flag2) flag = false;
-				}
-			if (flag) lines++;
+			filled[unit[a].Y]++;
+			if (filled[unit[a].Y]==width) lines++;
 		}
+		FA(a,unit) filled[unit[a].Y]--;
 		re += lines*lines*width*200;
 
-		FOR(a,0,height-1)
-			FOR(b,0,width-1)
-				if (board[a][b])
-					FOR(c,0,5)
-					{
-						PAR p = make_pair( b, a );
-						move_pnt( p, c, 1 );
-						bool flag = true;
-						FA(d,unit)
-							if (unit[d] == p)
-								flag = false;
-						if (flag)
-							if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
-								if (!board[p.Y][p.X])
-									re -= 2;
-					}
-		FOR(a,0,height-1)
-			FOR(b,0,width-1)
-				if (!board[a][b])
-					FOR(c,0,5)
-					{
-						PAR p = make_pair( b, a );
-						bool flag = true;
-						FA(d,unit)
-							if (unit[d] == p)
-								flag = false;
-						if (flag)
-						{
-							move_pnt( p, c, 1 );
-							if (!(0<=p.X && p.X<width && 0<=p.Y && p.Y<height))
-								re -= 2;
-						}
-					}
+		int holes_delta = 0;
+		FA(a,unit) board[unit[a].Y][unit[a].X] = 2;
 		FA(a,unit) FOR(b,0,5)
 		{
 			PAR p = unit[a];
 			move_pnt( p, b, 1 );
-			bool flag = true;
-			FA(c,unit)
-				if (unit[c] == p)
-					flag = false;
-			if (flag)
-				if (0<=p.X && p.X<width && 0<=p.Y && p.Y<height)
-					if (!board[p.Y][p.X])
-						re -= 2;
+			if (!(0<=p.X && p.X<width && 0<=p.Y && p.Y<height))
+				holes_delta--;
+			else if (board[p.Y][p.X]==0)
+				holes_delta++;
+			else if (board[p.Y][p.X]==1)
+				holes_delta--;
 		}
+		FA(a,unit) board[unit[a].Y][unit[a].X] = false;
+		re -= (holes + holes_delta)*2;
 
 		return re;
 	}
@@ -961,6 +964,8 @@ void calc_all_end_positions( STATE & sta )
 	dfs( sta );
 }
 
+int prob;
+
 vector<OUTPUT> sol_internal( const char *path )
 {
 
@@ -988,6 +993,7 @@ vector<OUTPUT> sol_internal( const char *path )
 			STATE S;
 			S.init( inp.width, inp.height );
 			FA(a,inp.filled) S.board[inp.filled[a].y][inp.filled[a].x] = true;
+			S.recalc_consts();
 
 			rnd.set_seed( inp.sourceSeeds[z] );
 
@@ -1045,7 +1051,7 @@ vector<OUTPUT> sol_internal( const char *path )
 				}
 
 				S.lock_unit();
-				fprintf(stderr, "%d, %d, %d states\n", z, a, (int)mmemo.sz);
+				fprintf(stderr, "%d, %d, %d, %d states\n", prob, z, a, (int)mmemo.sz);
 				//S.render();
 
 				//out.solution += cmds[best];
@@ -1070,6 +1076,7 @@ vector<OUTPUT> sol_internal( const char *path )
 
 void sol (int problem)
 {
+	prob = problem;
 	cerr << "problem " << problem << "\n";
 	char path[1000];
 	sprintf( path, "../data/problems/problem_%d.json", problem );
@@ -1102,7 +1109,7 @@ int main(int argc, char** argv)
 		powerphrases.push_back("r'lyeh");
 		powerphrases.push_back("yuggoth");
 		//powerphrases.push_back("cthulhu");
-		powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
+		//powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
 
 		build_automata();
 		//print_automata();
@@ -1115,7 +1122,7 @@ int main(int argc, char** argv)
 
 		//quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 14 );
+		sol( 4 );
 
 		cerr << clock() << "\n";
 	} else {
