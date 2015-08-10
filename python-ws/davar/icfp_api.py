@@ -26,10 +26,10 @@ def sanitize_solution(sol):
     return [ sanitize_problem(p) for p in sol ]
 
 
-def write_sanitized_solution(fname):
+def write_sanitized_solution(f):
     tempFile = '../../temp.json'
 
-    with io.open(fname, 'r') as h:
+    with io.open(f['fname'], 'r') as h:
         sol = json.loads(h.read())
     with io.open(tempFile, 'w') as h:
         tempSol = sanitize_solution(sol)
@@ -38,9 +38,9 @@ def write_sanitized_solution(fname):
     return tempFile
 
 
-def send_solution(fname) -> bool:
-    tempFile = write_sanitized_solution(fname)
-    print('Sending %s...' % fname)
+def send_solution(f) -> bool:
+    tempFile = write_sanitized_solution(f)
+    print('Sending %s...' % f['fname'])
     res = subprocess.call(
         ["curl",
          "--user", team_token,
