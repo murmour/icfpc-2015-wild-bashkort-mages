@@ -1192,7 +1192,7 @@ OUTPUT solve_with_evaluator( STATE::Evaluator ev, int z )
 		}
 
 		S.lock_unit();
-		fprintf(stderr, "%d, %d, %d, %d states\n", prob, z, a, (int)mmemo.sz);
+		fprintf(stderr, "prob=%d, idx=%d, seed=%d, score=%d, %d states\n", prob, z, out.seed, a, (int)mmemo.sz);
 		//S.render();
 
 		//out.solution += cmds[best];
@@ -1225,6 +1225,7 @@ void update_sol(STATE::Evaluator valf, int z, int &best_score, OUTPUT &best)
 		if (cur.my_score > best_score)
 		{
 			best_score = cur.my_score;
+			//cerr << "Cur seed: " << cur.seed << "\n";
 			best = cur;
 		}
 	}
@@ -1256,19 +1257,19 @@ vector<OUTPUT> sol_internal( const char *path )
 
 
 	vector< OUTPUT > answer;
-	int best_score = -1;
-	OUTPUT best;
 	int area = inp.height * inp.width;
 
 	FA(z,inp.sourceSeeds) if (input_seed == -1 || input_seed == z)
 	{
-
+		int best_score = -1;
+		OUTPUT best;
 		if (area <= 250)
 			update_sol(&STATE::get_value1, z, best_score, best);
 
 		update_sol(&STATE::get_value0, z, best_score, best);
 
 		answer.push_back( best );
+		//cerr << "Best seed: " << best.seed << "\n";
 	}
 
 	return answer;
