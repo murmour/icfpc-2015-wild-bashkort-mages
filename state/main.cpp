@@ -47,7 +47,7 @@ const int kPivotShift = 20000;
 
 #define CHECK_NEW_WORD
 
-string guten_tag = "hahahash_6";
+string guten_tag = "tokamak_1";
 int move_by_chr[255];
 vector<string> powerphrases;
 bool quiet = false;
@@ -300,7 +300,10 @@ struct STATE
 		board_value = 0;
 		FOR(a,0,height-1) FOR(b,0,width-1)
 			if (board[a][b])
-				board_value ++;
+			{
+				board_value++;
+				if (a<3) board_value-=10;
+			}
 		FOR(a,0,height-1)
 		{
 			filled[a] = 0;
@@ -358,10 +361,6 @@ struct STATE
 		FA(a,unit)
 		{
 			re += unit[a].Y*3+1;
-			/*if (unit[a].Y < 10) re -= 1;
-			if (unit[a].Y < 5) re -= 1;
-			if (unit[a].Y < 3) re -= 1;
-			if (unit[a].Y < 2) re -= 1;*/
 		}
 
 		int lines = 0;
@@ -601,11 +600,19 @@ int get_hash( LL tt )
 	return (int)((tt*(o_O+7) + tt) & ((1<<HTABLE_LOG)-1));
 }
 
+int get_hash( vector< PAR > & v )
+{
+	int re = 0;
+	FA(a,v) re = re*(o_O+7) + v[a].first*10007 + v[a].second + 1;
+	return ( re & ((1<<HTABLE_LOG)-1) );
+}
+
 template< typename KEY, typename VAL >
 struct HASHTABLE
 {
-	pair< KEY, pair< VAL, int > > * H;
-	int h_sz;
+	//pair< KEY, pair< VAL, int > > * H;
+	vector< pair< KEY, pair< VAL, int > > > H;
+	//int h_sz;
 	int hTable[1<<HTABLE_LOG];
 	int visited[1<<HTABLE_LOG];
 	int v_sz;
@@ -613,11 +620,11 @@ struct HASHTABLE
 
 	HASHTABLE()
 	{
-		h_sz = 100000;
+		//h_sz = 1000;
 		sz = 0;
 		v_sz = 0;
 		//H = new pair< KEY, pair< VAL, int > > [ h_sz ];
-		H = (pair< KEY, pair< VAL, int > > *) malloc( sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
+		//H = (pair< KEY, pair< VAL, int > > *) malloc( sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
 		FOR(a,0,(1<<HTABLE_LOG)-1) hTable[a] = -1;
 	}
 
@@ -635,12 +642,12 @@ struct HASHTABLE
 		if (hTable[ha]==-1) visited[v_sz++] = ha;
 
 		pair< KEY, pair< VAL, int > > node = MP( key, MP( val, hTable[ha] ) );
-		if (sz == h_sz)
-		{
+		if (sz == SZ(H)) H.push_back( node );
+		/*{
 			h_sz *= 2;
 			H = (pair< KEY, pair< VAL, int > > *) realloc( H, sizeof(pair< KEY, pair< VAL, int > >) * h_sz );
-		}
-		H[sz] = node;
+		}*/
+		else H[sz] = node;
 		hTable[ha] = sz;
 		sz++;
 
@@ -668,6 +675,9 @@ HASHTABLE< xpos, CanMove > memo_canmove;
 HASHTABLE< xpos, LL > vals_memo;
 HASHTABLE< LL, DP_VALUE > mmemo;
 HASHTABLE< xpos, int > memo_turn2;
+HASHTABLE< xpos, int > memo_turn3;
+HASHTABLE< vector< PAR >, LL > memo_end_turn1;
+HASHTABLE< vector< PAR >, LL > memo_end_turn2;
 
 inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 {
@@ -707,7 +717,71 @@ inline DP_STATE do_dp_move( STATE & sta, DP_STATE dps, int move )
 	return dps2;
 }
 
-LL get_next_move_value( STATE & sta )
+LL get_next2_move_value( STATE & sta )
+{
+	xpos xp = xpos::Get(sta);
+	memo_turn3.add( xp );
+
+	bool flag = false;
+	LL re = -o_O;
+	FOR(a,0,5)
+	{
+		if (sta.can_move( a ))
+		{
+			int tmp = sta.rotate;
+			sta.do_move( a );
+			if (!memo_turn3.find( xpos::Get(sta) ))
+				re = max( re, get_next2_move_value( sta ) );
+			sta.undo_move( a );
+			ass( tmp == sta.rotate );
+		}
+		else flag = true;
+	}
+	if (flag)
+		re = max( re, (LL)sta.get_value() );
+
+	return re;
+}
+
+vector< LL > move2_values;
+
+void estimate_next_move_value( STATE & sta )
+{
+	xpos xp = xpos::Get(sta);
+	memo_turn2.add( xp );
+
+	bool flag = false;
+	FOR(a,0,5)
+	{
+		if (sta.can_move( a ))
+		{
+			int tmp = sta.rotate;
+			sta.do_move( a );
+			if (!memo_turn2.find( xpos::Get(sta) ))
+				estimate_next_move_value( sta );
+			sta.undo_move( a );
+			ass( tmp == sta.rotate );
+		}
+		else flag = true;
+	}
+	if (flag)
+	{
+		if (sta.width * sta.height <= 160)
+		{
+			vector< PAR > uni = sta.unit;
+			sort( uni.begin(), uni.end() );
+			LL * vava = memo_end_turn2.find( uni );
+			if (!vava)
+			{
+				LL value = sta.get_value();
+				move2_values.push_back( value );
+				memo_end_turn2.add( uni, value );
+			}
+		}
+	}
+}
+
+LL get_next_move_value( STATE & sta, LL score )
 {
 	xpos xp = xpos::Get(sta);
 	memo_turn2.add( xp );
@@ -721,7 +795,7 @@ LL get_next_move_value( STATE & sta )
 			int tmp = sta.rotate;
 			sta.do_move( a );
 			if (!memo_turn2.find( xpos::Get(sta) ))
-				re = max( re, get_next_move_value( sta ) );
+				re = max( re, get_next_move_value( sta, score ) );
 			sta.undo_move( a );
 			ass( tmp == sta.rotate );
 		}
@@ -729,11 +803,42 @@ LL get_next_move_value( STATE & sta )
 	}
 	if (flag)
 	{
-		//sta.render();
-		re = max( re, (LL)sta.get_value() );
+		if (sta.width * sta.height <= 160)
+		{
+			vector< PAR > uni = sta.unit;
+			sort( uni.begin(), uni.end() );
+			LL * vava = memo_end_turn2.find( uni );
+			if (!vava)
+			{
+				LL value = sta.get_value() + 40;
+				if (value > score + 40)
+				{
+					STATE S2 = sta;
+					S2.lock_unit();
+					int ind = (rnd.cur(2)) % SZ(inp.units);
+					PAR pivot;
+					vector< PAR > unit;
+					unit_to_unit( inp.units[ind], pivot, unit );
+
+					if (S2.spawn_unit( pivot, unit ))
+					{
+						memo_turn3.clear();
+						value = max( value, get_next2_move_value( S2 ) );
+					}
+					else value = -o_O;
+
+					re = max( re, value );
+				}
+				memo_end_turn2.add( uni, value );
+			}
+			else re = max( re, *vava );
+		}
+		else
+		{
+			re = max( re, (LL)sta.get_value() );
+		}
 	}
 
-	//cout << re << " ";
 	return re;
 }
 
@@ -747,7 +852,7 @@ void dfs_canmove( STATE & sta )
 
 	//vals_memo[xp] = sta.get_value();
 	//LL * val = vals_memo.find( xp );
-	
+
 	CanMove res;
 
 	FOR(a,0,5)
@@ -769,29 +874,41 @@ void dfs_canmove( STATE & sta )
 		{
 			if (sta.width * sta.height <= 250)
 			{
-				STATE S2 = sta;
-				S2.lock_unit();
-				int ind = (rnd.cur(1)) % SZ(inp.units);
-				PAR pivot;
-				vector< PAR > unit;
-				unit_to_unit( inp.units[ind], pivot, unit );
-				LL value = sta.get_value() + 80;
-				if (S2.spawn_unit( pivot, unit ))
+				vector< PAR > uni = sta.unit;
+				sort( uni.begin(), uni.end() );
+				LL * vava = memo_end_turn1.find( uni );
+				if (!vava)
 				{
-					memo_turn2.clear();
-					value = max( value, get_next_move_value( S2 ) );
+					STATE S2 = sta;
+					S2.lock_unit();
+					int ind = (rnd.cur(1)) % SZ(inp.units);
+					PAR pivot;
+					vector< PAR > unit;
+					unit_to_unit( inp.units[ind], pivot, unit );
+					LL value = sta.get_value() + 80;
+					if (S2.spawn_unit( pivot, unit ))
+					{
+						memo_turn2.clear();
+						memo_end_turn2.clear();
+						move2_values.clear();
+						estimate_next_move_value( S2 );
+						sort( move2_values.begin(), move2_values.end() );
+						memo_turn2.clear();
+						memo_end_turn2.clear();
+						LL limit = -o_O;
+						if ( SZ(move2_values)>0 )
+							limit = move2_values[ max(0,SZ(move2_values)-10) ];
+						value = max( value, get_next_move_value( S2, limit ) );
+					}
+					else value = -o_O;
+					//cerr << value << " ";
+					vals_memo.add( xp, value );
+					//cout << "==========================\n\n";
+					memo_end_turn1.add( uni, value );
 				}
-				else value = -o_O;
-				//cerr << value << " ";
-				LL *val = vals_memo.add( xp );
-				*val = value; // sta.get_value();
-				//cout << "==========================\n\n";
+				else vals_memo.add( xp, *vava );
 			}
-			else
-			{
-				LL *val = vals_memo.add( xp );
-				*val = sta.get_value();
-			}
+			else vals_memo.add( xp, sta.get_value() );
 			break;
 		}
 	*memo_canmove.find(xp) = res;
@@ -881,7 +998,7 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 			FOR(c,0,5)
 			{
 				DP_VALUE tmp;
-				tmp.potential = potential[a_next[dps.node][move*6+c]];
+				tmp.potential = a_next[dps.node][move*6+c];
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
@@ -907,6 +1024,7 @@ void calc_crazy_dp( STATE & sta, int starting_node )
 	mmemo.clear();
 	vals_memo.clear();
 	memo_canmove.clear();
+	memo_end_turn1.clear();
 	dfs_canmove(sta);
 
 	DP_STATE dps;
@@ -964,8 +1082,6 @@ void calc_all_end_positions( STATE & sta )
 	dfs( sta );
 }
 
-int prob;
-
 vector<OUTPUT> sol_internal( const char *path )
 {
 
@@ -986,7 +1102,7 @@ vector<OUTPUT> sol_internal( const char *path )
 
 
 	vector< OUTPUT > answer;
-	FA(z,inp.sourceSeeds) //if (z==0)
+	FA(z,inp.sourceSeeds)
 	{
 		try
 		{
@@ -1051,7 +1167,7 @@ vector<OUTPUT> sol_internal( const char *path )
 				}
 
 				S.lock_unit();
-				fprintf(stderr, "%d, %d, %d, %d states\n", prob, z, a, (int)mmemo.sz);
+				fprintf(stderr, "%d, %d, %d, %d states\n", inp.id, z, a, (int)mmemo.sz);
 				//S.render();
 
 				//out.solution += cmds[best];
@@ -1076,7 +1192,6 @@ vector<OUTPUT> sol_internal( const char *path )
 
 void sol (int problem)
 {
-	prob = problem;
 	cerr << "problem " << problem << "\n";
 	char path[1000];
 	sprintf( path, "../data/problems/problem_%d.json", problem );
@@ -1108,8 +1223,12 @@ int main(int argc, char** argv)
 		powerphrases.push_back("ia! ia!");
 		powerphrases.push_back("r'lyeh");
 		powerphrases.push_back("yuggoth");
-		//powerphrases.push_back("cthulhu");
-		//powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
+		powerphrases.push_back("planet 10");
+		powerphrases.push_back("monkeyboy");
+		powerphrases.push_back("yoyodyne");
+		powerphrases.push_back("john bigboote");
+		powerphrases.push_back("necronomicon");
+		powerphrases.push_back("in his house at r'lyeh dead cthulhu waits dreaming.");
 
 		build_automata();
 		//print_automata();
@@ -1122,7 +1241,7 @@ int main(int argc, char** argv)
 
 		//quiet = true;
 		//FOR(a,0,23) sol( a );
-		sol( 4 );
+		sol( 23 );
 
 		cerr << clock() << "\n";
 	} else {
