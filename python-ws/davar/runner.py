@@ -23,14 +23,20 @@ def runProblem(executable, p, words):
         return None
 
 
+def loadWords():
+    with io.open('../../data/power-words.txt') as f:
+        x = f.read().split('\n')
+        return list(set([s for s in x if not s.startswith('#') and s.strip()]))
+
+
 if __name__ == '__main__':
-    if len(sys.argv) != 6:
-        print('Usage: runner.py executable tag lowIndex highIndex words')
+    if len(sys.argv) != 5:
+        print('Usage: runner.py executable tag lowIndex highIndex')
         sys.exit(1)
 
     executable = sys.argv[1]
     tag = sys.argv[2]
-    words = sys.argv[5].replace('"', '\'').split(',')
+    words = loadWords()
 
     problems = icfp_api.filter_problems(int(sys.argv[3]), int(sys.argv[4]))
     for p in problems:
