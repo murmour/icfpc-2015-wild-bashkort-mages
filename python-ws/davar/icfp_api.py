@@ -71,8 +71,7 @@ def parse_solution_fname(fname):
     m = re.match(solution_name_rx, fname)
     return { 'fname': '../../data/solutions/' + fname,
              'set_id': int(m.group('set_id')),
-             'tag': m.group('tag'),
-             'version': int(m.group('version')) }
+             'tag': '%s_%s' % (m.group('tag'), m.group('version')) }
 
 
 problem_name_rx = re.compile('problem_(?P<id>[0-9]+).json')
@@ -94,20 +93,15 @@ def filter_problems(lowIndex, highIndex):
     return files
 
 
-def filter_solutions(tag, version):
+def filter_solutions(tag):
     files = [ parse_solution_fname(f) for f in listdir("../../data/solutions") ]
-
-    def is_requested(f):
-        return ((tag == None or f['tag'] == tag) and
-                (version == None or f['version'] == version))
-
-    files = [ f for f in files if is_requested(f) ]
+    files = [ f for f in files if (tag == None or f['tag'] == tag) ]
     files.sort(key = lambda f: f['set_id'])
     return files
 
 
-def send_all_solutions(tag, version):
-    filtered = filter_solutions(tag, version)
+def send_all_solutions(tag):
+    filtered = filter_solutions(tag)
     for f in filtered:
         time.sleep(1)
         if not send_solution(f['fname']):
@@ -130,11 +124,11 @@ def score_solution(f, log):
     return (scores, pscores)
 
 
-def score_all_solutions_internal(tag, version, action):
-    filtered = filter_solutions(tag, version)
+def score_all_solutions_internal(tag, action):
+    filtered = filter_solutions(tag)
     total = 0
     totalp = 0
-    with io.open('log_%s_%s.txt' % (tag, str(version)), 'w') as log:
+    with io.open('log_%s.txt' % tag, 'w') as log:
         for f in filtered:
             (scores, pscores) = score_solution(f, log)
             action(f, scores, pscores)
@@ -145,13 +139,13 @@ def score_all_solutions_internal(tag, version, action):
         log.write(msg + '\n')
 
 
-def score_all_solutions(tag, version):
+def score_all_solutions(tag):
     def action(*args, **kargs):
         return None
-    score_all_solutions_internal(tag, version, action)
+    score_all_solutions_internal(tag, action)
 
 
-def score_and_mark_all_solutions(tag, version):
+def score_and_mark_all_solutions(tag):
     def action(f, scores, pscores):
         with io.open(f['fname'], 'r') as h:
             sol = json.loads(h.read())
@@ -160,13 +154,13 @@ def score_and_mark_all_solutions(tag, version):
                 sol[i]['score'] = scores[i]
                 sol[i]['pscore'] = pscores[i]
             h.write(json.dumps(sol))
-    score_all_solutions_internal(tag, version, action)
+    score_all_solutions_internal(tag, action)
 
 
-def compare_solutions(tag, version1, version2):
-    files = zip(filter_solutions(tag, version1), filter_solutions(tag, version2))
+def compare_solutions(tag1, tag2):
+    files = zip(filter_solutions(tag1), filter_solutions(tag2))
     total = 0
-    with io.open('log_%s_%d-%d.txt' % (tag, version1, version2), 'w') as log:
+    with io.open('log_diff_%s-%s.txt' % (tag1, tag2), 'w') as log:
         for f1, f2 in files:
             assert(f1['set_id'] == info2['set_id'])
             scores1 = mm.getScore(f1['fname'])
@@ -184,9 +178,5 @@ def compare_solutions(tag, version1, version2):
         log.write(msg + '\n')
 
 
-def main():
-    send_all_solutions(sys.argv[1], int(sys.argv[2]))
-
-
 if __name__ == '__main__':
-    main()
+    send_all_solutions(sys.argv[1])

@@ -63,7 +63,7 @@ def merge_problems(p1, p2):
 
 
 def compose_panopticum(version):
-    filtered = icfp_api.filter_solutions(None, None)
+    filtered = icfp_api.filter_solutions(None)
     filtered = [ f for f in filtered if f['tag'] != 'panopticum' ]
     filtered = [ f for f in filtered if f['tag'] != 'rdpack' ]
     solutions = [ read_solution(f) for f in filtered ]
