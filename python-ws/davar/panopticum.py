@@ -19,36 +19,20 @@ def read_solution(f):
 
 
 def is_valid_solution(sol):
-    if sol.__class__.__name__ != 'list':
-        return False
-    if sol == []:
+    if (sol.__class__.__name__ != 'list') or (sol == []):
         return False
 
     p = sol[0]
 
-    if 'pscore' not in p:
+    if ('pscore' not in p) or (p['pscore'].__class__.__name__ != 'int'):
         return False
-    if p['pscore'].__class__.__name__ != 'int':
+    if ('seed' not in p) or (p['seed'].__class__.__name__ != 'int'):
         return False
-
-    if 'seed' not in p:
+    if ('problemId' not in p) or (p['problemId'].__class__.__name__ != 'int'):
         return False
-    if p['seed'].__class__.__name__ != 'int':
+    if ('solution' not in p) or (p['solution'].__class__.__name__ != 'str'):
         return False
-
-    if 'problemId' not in p:
-        return False
-    if p['problemId'].__class__.__name__ != 'int':
-        return False
-
-    if 'solution' not in p:
-        return False
-    if p['solution'].__class__.__name__ != 'str':
-        return False
-
-    if 'tag' not in p:
-        return False
-    if p['tag'].__class__.__name__ != 'str':
+    if ('tag' not in p) or (p['tag'].__class__.__name__ != 'str'):
         return False
 
     return True
@@ -81,7 +65,6 @@ def merge_problems(p1, p2):
 def compose_panopticum(version):
     filtered = icfp_api.filter_solutions(None, None)
     filtered = [ f for f in filtered if f['tag'] != 'panopticum' ]
-    filtered = [ f for f in filtered if (f['tag'] != 'panopticum' and f['version'] != 6) ]
     filtered = [ f for f in filtered if f['tag'] != 'rdpack' ]
     solutions = [ read_solution(f) for f in filtered ]
     solutions = [ sol for sol in solutions if is_valid_solution(sol) ]
