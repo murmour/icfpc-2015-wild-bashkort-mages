@@ -64,7 +64,7 @@ def get_results() -> bool:
 
 solution_name_rx = re.compile('solution_'
                               '(?P<set_id>[0-9]+)_'
-                              '(?P<tag>[a-z]+)_'
+                              r'(?P<tag>[a-z0-9\-]+)_'
                               '(?P<version>[0-9]+).json')
 
 def parse_solution_fname(fname):
