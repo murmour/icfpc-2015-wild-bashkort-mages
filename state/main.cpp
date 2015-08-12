@@ -1040,7 +1040,7 @@ DP_VALUE get_dp( STATE & sta, DP_STATE dps )
 			FOR(c,0,5)
 			{
 				DP_VALUE tmp;
-				tmp.potential = a_next[dps.node][move*6+c];
+				tmp.potential = potential[a_next[dps.node][move*6+c]];
 				int msk = a_mask[dps.node][move*6+c];
 				FA(d,powerphrases) if ((msk>>d)&1)
 				{
