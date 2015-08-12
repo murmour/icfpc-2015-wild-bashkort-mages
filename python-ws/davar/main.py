@@ -753,11 +753,16 @@ class TileEditor(QtGui.QMainWindow):
         sol["tag"] = 'davar_visualizer'
         sol['solution'] = self.cmds
         sol = [sol]
-        fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
         os.makedirs('saves', exist_ok=True)
+        fname = cmn.getOpenFileName(self, 'sol_save', 'Save solution', 'JSON Files (*.json)', True)
+        if not fname:         
+            fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
+        else:
+            if not fname.endswith('.json'):
+                fname += '.json'        
         with io.open(fname, 'w') as f:
             f.write(json.dumps(sol))
-        print('Saved')
+        print('Saved to %s' % fname)
 
     def doOpen(self):
         fname = cmn.getOpenFileName(self, 'sol', 'Open solution', 'JSON Files (*.json)')
