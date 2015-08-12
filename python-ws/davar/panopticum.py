@@ -14,7 +14,7 @@ def read_solution(f):
         for p in sol:
             if p.__class__.__name__ != 'dict':
                 sys.exit(1)
-            p['pantag'] = '%s_%d' % (f['tag'], f['version'])
+            p['pantag'] = f['tag']
         return sol
 
 
@@ -62,10 +62,10 @@ def merge_problems(p1, p2):
         return p2
 
 
-def compose_panopticum(version):
+def compose_panopticum(tag):
     filtered = icfp_api.filter_solutions(None)
-    filtered = [ f for f in filtered if f['tag'] != 'panopticum' ]
-    filtered = [ f for f in filtered if f['tag'] != 'rdpack' ]
+    filtered = [ f for f in filtered if 'panopticum' not in f['tag']]
+    # filtered = [ f for f in filtered if 'fixed-potential' not in f['tag']  ]
     solutions = [ read_solution(f) for f in filtered ]
     solutions = [ sol for sol in solutions if is_valid_solution(sol) ]
 
@@ -93,14 +93,14 @@ def compose_panopticum(version):
             s1 = merge_solutions(s1, s2)
 
         for p in s1:
-            p['tag'] = 'panopticum_%d' % version
-        fname = '../../data/solutions/solution_%d_panopticum_%d.json' % (pid, version)
+            p['tag'] = tag
+        fname = '../../data/solutions/solution_%d_%s.json' % (pid, tag)
         with io.open(fname, 'w') as h:
             h.write(json.dumps(s1))
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print('Usage: panopticum.py version')
+        print('Usage: panopticum.py tag')
         sys.exit(1)
-    compose_panopticum(int(sys.argv[1]))
+    compose_panopticum(sys.argv[1])

@@ -13,10 +13,10 @@ template = '''
         <style>
         td.max {
             background-color: lightgreen;
-        }  
+        }
         td.min {
             background-color: #ffa0a0;
-        }      
+        }
         </style>
     </head>
     <body>%s</body>
@@ -28,7 +28,7 @@ def make_html(table):
         if x.__class__.__name__ == 'int':
             return x
         return -1
-    
+
     def make_row(data):
         mx = max([f(x) for x in data[1:]])
         mi = min([f(x) for x in data[1:]])
@@ -38,19 +38,19 @@ def make_html(table):
             if x == mi:
                 return ' class="min"'
             return ''
-        
-        return '<tr>%s</tr>' % ''.join('<td%s>%s</td>' % (cl(x), x) for x in data)    
-        
+
+        return '<tr>%s</tr>' % ''.join('<td%s>%s</td>' % (cl(x), x) for x in data)
+
     res = '<table>%s</table>' % '\n'.join(make_row(row) for row in table)
     return template % res
 
 def compare(tags):
     table = {} # id -> row
     n_seeds = [1,1,10,5,50,10,50,5,10,5,1,5,10,1,1,1,1,1,1,1,1,1,1,1,1]
-    
+
     totals = [0] * len(tags)
     for i, tag in enumerate(tags):
-        files = [x['fname'] for x in icfp_api.filter_solutions(tag)]        
+        files = [x['fname'] for x in icfp_api.filter_solutions(tag)]
         for fname in files:
             ident = None
             with io.open(fname, 'r') as f:
@@ -74,28 +74,36 @@ def compare(tags):
                         fail = True
                         break
                 if fail:
-                    continue                
+                    continue
                 if len(sols) != n_seeds[ident]:
                     print('unexpected number of games in file %s: %d instead of %d' % (fname, len(sols), n_seeds[ident]))
                     continue
                 ident = int(ident)
                 if ident not in table:
-                    table[ident] = [ident] + ['?' for _ in range(len(tags))] 
+                    table[ident] = [ident] + ['?' for _ in range(len(tags))]
                 table[ident][i+1] = score // len(sols)
                 totals[i] += score // len(sols)
-    
+
     table = list(table.values())
     table.sort(key=lambda x: x[0])
     table = [['id'] + tags] + table + [['Total'] + totals]
     #print(table)
     with io.open('table.html', 'w') as res:
         res.write(make_html(table))
-    print('Done!')        
-    
+    print('Done!')
+
 
 
 def main():
-    compare(['monday-morning-18_1', 'what-we-sent-18_1', 'fixed-potential_1', 'panopticum_666'])
+    compare([
+        'apocalypse-1-18_1',
+        'apocalypse-2-18_1',
+        'monday-morning-18_1',
+        'what-we-sent-18_1',
+        'panopticum18_666',
+        'fixed-potential_1',
+        'panopticum_777',
+    ])
     return
 
     fname = '../../data/solutions/solution_4_rdpacker_1.json'
@@ -106,8 +114,8 @@ def main():
         print('sum = ', sum(useds))
         print('Min = ', min(useds))
         print('Idx = ', useds.index(min(useds)))
-        
-        
+
+
 
 if __name__ == '__main__':
     main()
