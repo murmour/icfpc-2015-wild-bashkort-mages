@@ -1,6 +1,5 @@
 python-ws/.metadata
 __pycache__
-
 *.ncb
 *.sln
 *.suo
@@ -9,17 +8,17 @@ __pycache__
 *.o
 */Debug
 */Release
-
 honeycaml/generated/*
 *.native
 *.byte
 _build
-
 play_icfp2015
 *.tar.gz
 solutions
 data
 log_*
+*.log
+*.html
 temp.json
 discovery.json
 rankings.js
