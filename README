@@ -1,0 +1,40 @@
+ICFP Programming Contest 2015 submission by the
+
+------------------------ WILD ---------------------------
+======================== BASHKORT =======================
+--------------------------- MAGES -----------------------
+
+... with love, from Bashkortostan, best country in the world.
+    (https://en.wikipedia.org/wiki/Bashkortostan)
+
+Authors:
+  Damir Akhmetzyanov (linesprower@gmail.com),
+  Max Mouratov (mmouratov@gmail.com),
+  Artem Ripatti (ripatti@inbox.ru).
+
+Target platform:
+  Ubuntu 14.04, x86-64.
+
+Implementation language:
+  The solver is written in C++ (an elegant weapon, for a more civilized
+  age). Python was our tool of choice for building the necessary internal
+  infrastructure (not included here); most notably the interactive
+  player/visualizer and the experimental data analysis framework.
+  Originally, one of the prototype solvers was implemented in OCaml,
+  but the C++ one quickly proved much more promising.
+
+Build dependencies:
+  Stock GCC package (including g++).
+
+Build instructions:
+  Run 'make'.
+
+Algorithm description:
+  We have discovered a truly marvelous solution to this
+  problem, but this README is too narrow to contain it.
+
+Important notes:
+  Solving the full set of the Qualifier Problems might take several
+  hours on the modern commodity hardware. Please, be patient...
+
+  ... and thanks for the awesome contest! \o/ \o/ \o/
