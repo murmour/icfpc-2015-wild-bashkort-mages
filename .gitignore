@@ -14,8 +14,6 @@ honeycaml/generated/*
 _build
 play_icfp2015
 *.tar.gz
-solutions
-data
 log_*
 *.log
 *.html

@@ -1,0 +1,500 @@
+* Apocalypse 1
+  ei!
+  yuggoth
+  ia! ia!
+  r'lyeh
+
+  real 149m12.847s
+  user 143m35.416s
+  sys 0m5.777s
+
+** Our scores
+  Id = 0, score = 8213 (2549 + 5664)
+  Id = 1, score = 5712 (700 + 5012)
+  Id = 2, score = 11593 (1493 + 10099)
+  Id = 3, score = 11137 (984 + 10152)
+  Id = 4, score = 6922 (2317 + 4604)
+  Id = 5, score = 9034 (1042 + 7991)
+  Id = 6, score = 12325 (3884 + 8441)
+  Id = 7, score = 7678 (666 + 7012)
+  Id = 8, score = 16266 (5948 + 10318)
+  Id = 9, score = 3285 (979 + 2306)
+  Id = 10, score = 7408 (2400 + 5008)
+  Id = 11, score = 3632 (728 + 2904)
+  Id = 12, score = 11884 (1380 + 10504)
+  Id = 13, score = 1851 (153 + 1698)
+  Id = 14, score = 103758 (1592 + 102166)
+  Id = 15, score = 4120 (184 + 3936)
+  Id = 16, score = 12512 (1934 + 10578)
+  Id = 17, score = 7408 (1400 + 6008)
+  Id = 18, score = 9817 (631 + 9186)
+  Id = 19, score = 7188 (1300 + 5888)
+  Id = 20, score = 8834 (1744 + 7090)
+  Id = 21, score = 1478 (620 + 858)
+  Id = 22, score = 8034 (2600 + 5434)
+  Id = 23, score = 862 (136 + 726)
+  Id = 24, score = 262638 (8284 + 254354)
+  Total = 543593.42 (45652.82 + 497940.60)
+
+** Leaderboard
+  Sun Aug  9 18:34:18 UTC 2015
+  0 (5, 8213, 4, ['topologic_1'])
+  1 (1, 5712, 2, ['topologic_1'])
+  2 (5, 11593, 4, ['topologic_1'])
+  3 (2, 11137, 4, ['topologic_1'])
+  4 (20, 6922, 4, ['topologic_1'])
+  5 (2, 8112, 4, ['topologic_1'])
+  6 (2, 12325, 4, ['topologic_1'])
+  7 (2, 7678, 4, ['topologic_1'])
+  8 (4, 16266, 4, ['topologic_1'])
+  9 (21, 3285, 4, ['topologic_1'])
+  10 (2, 7408, 4, ['topologic_1'])
+  11 (4, 3632, 4, ['topologic_1'])
+  12 (2, 11884, 4, ['topologic_1'])
+  13 (14, 1851, 4, ['topologic_1'])
+  14 (1, 103758, 4, ['topologic_1'])
+  15 (12, 4120, 4, ['topologic_1'])
+  16 (2, 12512, 4, ['topologic_1'])
+  17 (2, 7408, 2, ['topologic_1'])
+  18 (14, 9817, 4, ['topologic_1'])
+  19 (1, 7188, 2, ['topologic_1'])
+  20 (3, 8834, 4, ['topologic_1'])
+  21 (8, 1478, 2, ['topologic_1'])
+  22 (3, 8034, 4, ['topologic_1'])
+  23 (32, 862, 2, ['topologic_1'])
+  24 (2, 262638, 4, ['topologic_1'])
+
+* Apocalypse 2
+  ei!
+  yuggoth
+  ia! ia!
+  r'lyeh
+  necronomicon
+
+  real 71m9.602s
+  user 70m36.806s
+  sys 0m4.397s
+
+** Our scores
+  Id = 0, score = 8681 (2649 + 6032)
+  Id = 1, score = 5750 (700 + 5050)
+  Id = 2, score = 10935 (1219 + 9716)
+  Id = 3, score = 11705 (1084 + 10621)
+  Id = 4, score = 6754 (2153 + 4601)
+  Id = 5, score = 9340 (992 + 8347)
+  Id = 6, score = 12725 (3898 + 8827)
+  Id = 7, score = 8207 (746 + 7460)
+  Id = 8, score = 17416 (5938 + 11477)
+  Id = 9, score = 3370 (1065 + 2304)
+  Id = 10, score = 7226 (2500 + 4726)
+  Id = 11, score = 3709 (616 + 3092)
+  Id = 12, score = 12439 (1401 + 11038)
+  Id = 13, score = 2137 (153 + 1984)
+  Id = 14, score = 96752 (1192 + 95560)
+  Id = 15, score = 4438 (184 + 4254)
+  Id = 16, score = 12568 (1934 + 10634)
+  Id = 17, score = 7580 (1400 + 6180)
+  Id = 18, score = 10161 (631 + 9530)
+  Id = 19, score = 7358 (1300 + 6058)
+  Id = 20, score = 9138 (1744 + 7394)
+  Id = 21, score = 1482 (620 + 862)
+  Id = 22, score = 8322 (2600 + 5722)
+  Id = 23, score = 868 (136 + 732)
+  Id = 24, score = 266852 (8374 + 258478)
+  Total = 545917.62 (45234.26 + 500683.36)
+
+** Leaderboard
+  0 (4, 8681, 5, ['apocalypse_2'])
+  1 (1, 5750, 2, ['apocalypse_2'])
+  2 (7, 10935, 5, ['apocalypse_2'])
+  3 (2, 11705, 5, ['apocalypse_2'])
+  4 (21, 6754, 5, ['apocalypse_2'])
+  5 (2, 8377, 5, ['apocalypse_2'])
+  6 (2, 12725, 5, ['apocalypse_2'])
+  7 (2, 8207, 5, ['apocalypse_2'])
+  8 (3, 17416, 4, ['apocalypse_2'])
+  9 (23, 3370, 4, ['apocalypse_2'])
+  10 (2, 7226, 4, ['apocalypse_2'])
+  11 (5, 3709, 5, ['apocalypse_2'])
+  12 (2, 12439, 5, ['apocalypse_2'])
+  13 (9, 2137, 5, ['apocalypse_2'])
+  14 (2, 96752, 5, ['apocalypse_2'])
+  15 (10, 4438, 5, ['apocalypse_2'])
+  16 (2, 12568, 5, ['apocalypse_2'])
+  17 (1, 7580, 2, ['apocalypse_2'])
+  18 (14, 10161, 5, ['apocalypse_2'])
+  19 (1, 7358, 2, ['apocalypse_2'])
+  20 (3, 9138, 5, ['apocalypse_2'])
+  21 (7, 1482, 2, ['apocalypse_2'])
+  22 (3, 8322, 5, ['apocalypse_2'])
+  23 (36, 868, 2, ['apocalypse_2'])
+  24 (2, 266852, 5, ['apocalypse_2'])
+
+* Apocalypse 3
+  ei!
+  yuggoth
+  ia! ia!
+  r'lyeh
+  necronomicon
+
+  real 104m54.184s
+  user 104m6.826s
+  sys 0m5.857s
+
+** Our scores
+  Id = 0, score = 8821 (2649 + 6172)
+  Id = 1, score = 5978 (800 + 5178)
+  Id = 2, score = 12662 (1780 + 10882)
+  Id = 3, score = 11693 (1024 + 10668)
+  Id = 4, score = 10343 (4547 + 5796)
+  Id = 5, score = 9451 (1002 + 8449)
+  Id = 6, score = 12943 (3916 + 9026)
+  Id = 7, score = 8047 (686 + 7361)
+  Id = 8, score = 18069 (5968 + 12101)
+  Id = 9, score = 4879 (1966 + 2913)
+  Id = 10, score = 7366 (2400 + 4966)
+  Id = 11, score = 4285 (834 + 3450)
+  Id = 12, score = 12870 (1493 + 11376)
+  Id = 13, score = 2161 (187 + 1974)
+  Id = 14, score = 99834 (1392 + 98442)
+  Id = 15, score = 4660 (320 + 4340)
+  Id = 16, score = 12838 (1934 + 10904)
+  Id = 17, score = 7716 (1400 + 6316)
+  Id = 18, score = 10528 (644 + 9884)
+  Id = 19, score = 7458 (1300 + 6158)
+  Id = 20, score = 9390 (1844 + 7546)
+  Id = 21, score = 1562 (620 + 942)
+  Id = 22, score = 8288 (2600 + 5688)
+  Id = 23, score = 1417 (475 + 942)
+  Id = 24, score = 283742 (8774 + 274968)
+  Total = 577005.50 (50559.38 + 526446.12)
+
+** Leaderboard
+  Mon Aug 10 00:22:38 UTC 2015
+  0 (4, 8821, 5, ['apocalypse_3'])
+  1 (1, 5978, 2, ['apocalypse_3'])
+  2 (5, 12662, 5, ['apocalypse_3'])
+  3 (2, 11693, 5, ['apocalypse_3'])
+  4 (10, 10343, 5, ['apocalypse_3'])
+  5 (2, 8547, 5, ['apocalypse_3'])
+  6 (3, 12943, 5, ['apocalypse_3'])
+  7 (4, 8047, 5, ['apocalypse_3'])
+  8 (2, 18069, 4, ['apocalypse_3'])
+  9 (18, 4879, 4, ['apocalypse_3'])
+  10 (2, 7366, 4, ['apocalypse_3'])
+  11 (3, 4285, 5, ['apocalypse_3'])
+  12 (2, 12870, 5, ['apocalypse_3'])
+  13 (12, 2161, 5, ['apocalypse_3'])
+  14 (2, 99834, 5, ['apocalypse_3'])
+  15 (12, 4660, 5, ['apocalypse_3'])
+  16 (3, 12838, 5, ['apocalypse_3'])
+  17 (1, 7716, 2, ['apocalypse_3'])
+  18 (15, 10528, 5, ['apocalypse_3'])
+  19 (1, 7458, 2, ['apocalypse_3'])
+  20 (2, 9390, 5, ['apocalypse_3'])
+  21 (2, 1562, 2, ['apocalypse_3'])
+  22 (3, 8288, 5, ['apocalypse_3'])
+  23 (23, 1417, 2, ['apocalypse_3'])
+  24 (1, 283742, 5, ['apocalypse_3'])
+
+* Apocalypse 4
+  ei!
+  yuggoth
+  ia! ia!
+  r'lyeh
+  necronomicon
+  planet 10
+  monkeyboy
+  john bigboote
+
+  real 78m41.003s
+  user 78m1.400s
+  sys 0m5.713s
+
+** Our Scores
+  Id = 0, score = 9615 (2649 + 6966)
+  Id = 1, score = 5836 (800 + 5036)
+  Id = 2, score = 13646 (1713 + 11933)
+  Id = 3, score = 12531 (984 + 11546)
+  Id = 4, score = 13412 (5092 + 8319)
+  Id = 5, score = 10130 (972 + 9157)
+  Id = 6, score = 13404 (3890 + 9514)
+  Id = 7, score = 8679 (666 + 8012)
+  Id = 8, score = 17036 (5958 + 11077)
+  Id = 9, score = 4484 (1420 + 3064)
+  Id = 10, score = 7648 (2400 + 5248)
+  Id = 11, score = 5089 (871 + 4218)
+  Id = 12, score = 13801 (1506 + 12295)
+  Id = 13, score = 3019 (187 + 2832)
+  Id = 14, score = 100476 (1392 + 99084)
+  Id = 15, score = 5698 (300 + 5398)
+  Id = 16, score = 12790 (1934 + 10856)
+  Id = 17, score = 7332 (1400 + 5932)
+  Id = 18, score = 11303 (661 + 10642)
+  Id = 19, score = 7138 (1300 + 5838)
+  Id = 20, score = 10120 (1744 + 8376)
+  Id = 21, score = 1536 (620 + 916)
+  Id = 22, score = 8706 (2600 + 6106)
+  Id = 23, score = 980 (254 + 726)
+  Id = 24, score = 280618 (8574 + 272044)
+  Total = 585030.94 (49890.98 + 535139.96)
+
+** Leaderboard
+  Mon Aug 10 02:27:21 UTC 2015
+  0 (3, 9615, 8, ['apocalypse_4'])
+  1 (1, 5836, 2, ['apocalypse_4'])
+  2 (5, 13646, 8, ['apocalypse_4'])
+  3 (2, 12531, 8, ['apocalypse_4'])
+  4 (7, 13412, 8, ['apocalypse_4'])
+  5 (2, 9171, 8, ['apocalypse_4'])
+  6 (2, 13404, 8, ['apocalypse_4'])
+  7 (2, 8679, 8, ['apocalypse_4'])
+  8 (4, 17036, 6, ['apocalypse_4'])
+  9 (22, 4484, 6, ['apocalypse_4'])
+  10 (2, 7648, 6, ['apocalypse_4'])
+  11 (2, 5089, 8, ['apocalypse_4'])
+  12 (2, 13801, 8, ['apocalypse_4'])
+  13 (4, 3019, 8, ['apocalypse_4'])
+  14 (2, 100476, 8, ['apocalypse_4'])
+  15 (7, 5698, 8, ['apocalypse_4'])
+  16 (3, 12790, 8, ['apocalypse_4'])
+  17 (2, 7332, 2, ['apocalypse_4'])
+  18 (14, 11303, 8, ['apocalypse_4'])
+  19 (2, 7138, 2, ['apocalypse_4'])
+  20 (2, 10120, 8, ['apocalypse_4'])
+  21 (3, 1536, 2, ['apocalypse_4'])
+  22 (2, 8706, 7, ['apocalypse_4'])
+  23 (42, 980, 2, ['apocalypse_4'])
+  24 (2, 280618, 8, ['apocalypse_4'])
+
+* Apocalypse 5
+  10 words
+
+  real 106m8.931s
+  user 105m21.373s
+  sys 0m6.077s
+
+** Our scores
+  Id = 0, score = 9779 (2649 + 7130)
+  Id = 1, score = 5796 (800 + 4996)
+  Id = 2, score = 13804 (1661 + 12143)
+  Id = 3, score = 12828 (1024 + 11803)
+  Id = 4, score = 13847 (5148 + 8698)
+  Id = 5, score = 10356 (942 + 9413)
+  Id = 6, score = 13567 (3894 + 9672)
+  Id = 7, score = 8950 (686 + 8264)
+  Id = 8, score = 17284 (5958 + 11326)
+  Id = 9, score = 4609 (1356 + 3253)
+  Id = 10, score = 8112 (2400 + 5712)
+  Id = 11, score = 5352 (871 + 4480)
+  Id = 12, score = 13937 (1517 + 12420)
+  Id = 13, score = 3305 (187 + 3118)
+  Id = 14, score = 100244 (1392 + 98852)
+  Id = 15, score = 5972 (300 + 5672)
+  Id = 16, score = 13406 (1934 + 11472)
+  Id = 17, score = 7330 (1400 + 5930)
+  Id = 18, score = 11057 (631 + 10426)
+  Id = 19, score = 7078 (1300 + 5778)
+  Id = 20, score = 10250 (1744 + 8506)
+  Id = 21, score = 1536 (620 + 916)
+  Id = 22, score = 8852 (2600 + 6252)
+  Id = 23, score = 1592 (472 + 1120)
+  Id = 24, score = 266928 (8574 + 258354)
+  Total = 575775.14 (50064.18 + 525710.96)
+
+** Leaderboard
+  Mon Aug 10 06:01:25 UTC 2015
+  0 (4, 9779, 9, ['apocalypse_5'])
+  1 (1, 5796, 2, ['apocalypse_5'])
+  2 (7, 13804, 10, ['apocalypse_5'])
+  3 (2, 12828, 9, ['apocalypse_5'])
+  4 (7, 13847, 9, ['apocalypse_5'])
+  5 (2, 9374, 9, ['apocalypse_5'])
+  6 (2, 13567, 9, ['apocalypse_5'])
+  7 (2, 8950, 9, ['apocalypse_5'])
+  8 (3, 17284, 7, ['apocalypse_5'])
+  9 (23, 4609, 7, ['apocalypse_5'])
+  10 (3, 8112, 8, ['apocalypse_5'])
+  11 (2, 5352, 9, ['apocalypse_5'])
+  12 (2, 13937, 9, ['apocalypse_5'])
+  13 (5, 3305, 9, ['apocalypse_5'])
+  14 (2, 100244, 10, ['apocalypse_5'])
+  15 (6, 5972, 9, ['apocalypse_5'])
+  16 (2, 13406, 9, ['apocalypse_5'])
+  17 (2, 7330, 2, ['apocalypse_5'])
+  18 (18, 11057, 9, ['apocalypse_5'])
+  19 (2, 7078, 2, ['apocalypse_5'])
+  20 (2, 10250, 9, ['apocalypse_5'])
+  21 (3, 1536, 2, ['apocalypse_5'])
+  22 (3, 8852, 8, ['apocalypse_5'])
+  23 (23, 1592, 3, ['apocalypse_5'])
+  24 (3, 266928, 10, ['apocalypse_5'])
+
+* Apocalypse 6
+  ei!
+  yuggoth
+  ia! ia!
+  r'lyeh
+  necronomicon
+  planet 10
+  monkeyboy
+  john bigboote
+  in his house at r'lyeh dead cthulhu waits dreaming.
+  yoyodyne
+
+** Our scores
+  Id = 0, score = 9779 (2649 + 7130)
+  Id = 1, score = 5796 (800 + 4996)
+  Id = 2, score = 13804 (1661 + 12143)
+  Id = 3, score = 12828 (1024 + 11803)
+  Id = 4, score = 13948 (5210 + 8738)
+  Id = 5, score = 10356 (942 + 9413)
+  Id = 6, score = 13571 (3906 + 9665)
+  Id = 7, score = 8950 (686 + 8264)
+  Id = 8, score = 17284 (5958 + 11326)
+  Id = 9, score = 8951 (4120 + 4830)
+  Id = 10, score = 8112 (2400 + 5712)
+  Id = 11, score = 5352 (871 + 4480)
+  Id = 12, score = 13937 (1517 + 12420)
+  Id = 13, score = 3305 (187 + 3118)
+  Id = 14, score = 100244 (1392 + 98852)
+  Id = 15, score = 5972 (300 + 5672)
+  Id = 16, score = 13406 (1934 + 11472)
+  Id = 17, score = 7330 (1400 + 5930)
+  Id = 18, score = 11057 (631 + 10426)
+  Id = 19, score = 7078 (1300 + 5778)
+  Id = 20, score = 10250 (1744 + 8506)
+  Id = 21, score = 1536 (620 + 916)
+  Id = 22, score = 8852 (2600 + 6252)
+  Id = 23, score = 1592 (472 + 1120)
+  Total = 313295.10 (44328.66 + 268966.44)
+
+** Leaderboard
+  ???
+
+* Apocalypse 7
+
+** 10 words
+  Id = 0, score = 9761 (2649 + 7112)
+  Id = 1, score = 5796 (800 + 4996)
+  Id = 2, score = 13804 (1661 + 12143)
+  Id = 3, score = 12828 (1024 + 11803)
+  Id = 5, score = 10356 (942 + 9413)
+  Id = 7, score = 8950 (686 + 8264)
+  Id = 8, score = 17314 (5948 + 11366)
+  Id = 9, score = 9119 (4273 + 4845)
+  Id = 10, score = 8124 (2400 + 5724)
+  Id = 11, score = 5704 (1047 + 4657)
+  Id = 12, score = 13937 (1517 + 12420)
+  Id = 13, score = 3305 (187 + 3118)
+  Id = 14, score = 100244 (1392 + 98852)
+  Id = 15, score = 5972 (300 + 5672)
+  Id = 16, score = 13406 (1934 + 11472)
+  Id = 17, score = 7330 (1400 + 5930)
+  Id = 18, score = 11057 (631 + 10426)
+  Id = 19, score = 7078 (1300 + 5778)
+  Id = 20, score = 10250 (1744 + 8506)
+  Id = 21, score = 1526 (620 + 906)
+  Id = 22, score = 8888 (2600 + 6288)
+  Id = 23, score = 1904 (472 + 1432)
+  Total = 286656.80 (35530.60 + 251126.20)
+
+** Leaderboard
+  ???
+
+* Monday morning
+  18 words
+
+** Our scores
+  Id = 0, score = 11295 (2649 + 8646)
+  Id = 1, score = 5634 (800 + 4834)
+  Id = 2, score = 15705 (1671 + 14033)
+  Id = 3, score = 14697 (1084 + 13612)
+  Id = 4, score = 14903 (4870 + 10033)
+  Id = 5, score = 12101 (972 + 11128)
+  Id = 6, score = 15056 (3890 + 11166)
+  Id = 7, score = 10455 (706 + 9749)
+  Id = 8, score = 17335 (5958 + 11377)
+  Id = 9, score = 5802 (1444 + 4358)
+  Id = 10, score = 8564 (2400 + 6164)
+  Id = 11, score = 6762 (812 + 5949)
+  Id = 12, score = 15865 (1546 + 14319)
+  Id = 13, score = 3485 (153 + 3332)
+  Id = 14, score = 101996 (1392 + 100604)
+  Id = 15, score = 8030 (316 + 7714)
+  Id = 16, score = 15346 (1934 + 13412)
+  Id = 17, score = 7224 (1400 + 5824)
+  Id = 18, score = 12757 (631 + 12126)
+  Id = 19, score = 6892 (1300 + 5592)
+  Id = 20, score = 12286 (1744 + 10542)
+  Id = 21, score = 1498 (620 + 878)
+  Id = 22, score = 10034 (2600 + 7434)
+  Id = 23, score = 1568 (472 + 1096)
+  Id = 24, score = 270818 (8374 + 262444)
+  Total = 606111.20 (49742.24 + 556368.96)
+
+* What we sent
+  18 words
+
+  real 462m54.565s
+  user 460m37.734s
+  sys 0m14.793s
+
+** Our scores
+   Id = 0, score = 11397 (2649 + 8748)
+   Id = 1, score = 5634 (800 + 4834)
+   Id = 2, score = 15705 (1671 + 14033)
+   Id = 3, score = 14697 (1084 + 13612)
+   Id = 4, score = 23611 (9337 + 14274)
+   Id = 5, score = 12101 (972 + 11128)
+   Id = 6, score = 15224 (4030 + 11193)
+   Id = 7, score = 10455 (706 + 9749)
+   Id = 8, score = 16901 (5948 + 10953)
+   Id = 9, score = 9747 (4142 + 5605)
+   Id = 10, score = 8618 (2400 + 6218)
+   Id = 11, score = 7076 (945 + 6131)
+   Id = 12, score = 15865 (1546 + 14319)
+   Id = 13, score = 3485 (153 + 3332)
+   Id = 14, score = 101996 (1392 + 100604)
+   Id = 15, score = 8030 (316 + 7714)
+   Id = 16, score = 15346 (1934 + 13412)
+   Id = 17, score = 7224 (1400 + 5824)
+   Id = 18, score = 12757 (631 + 12126)
+   Id = 19, score = 6892 (1300 + 5592)
+   Id = 20, score = 12286 (1744 + 10542)
+   Id = 21, score = 1490 (620 + 870)
+   Id = 22, score = 10028 (2600 + 7428)
+   Id = 23, score = 1880 (472 + 1408)
+   Id = 24, score = 270818 (8374 + 262444)
+   Total = 619267.20 (57169.64 + 562097.56)
+
+* Fixed potential
+  18 words
+
+** Our scores
+  Id = 0, score = 11783 (2749 + 9034)
+  Id = 1, score = 5976 (800 + 5176)
+  Id = 2, score = 15698 (1769 + 13929)
+  Id = 3, score = 14734 (984 + 13749)
+  Id = 4, score = 24650 (9398 + 15252)
+  Id = 5, score = 12273 (992 + 11280)
+  Id = 6, score = 15897 (4006 + 11891)
+  Id = 7, score = 11096 (666 + 10429)
+  Id = 8, score = 18853 (5958 + 12895)
+  Id = 9, score = 8934 (3240 + 5694)
+  Id = 10, score = 8778 (2400 + 6378)
+  Id = 11, score = 7424 (1152 + 6272)
+  Id = 12, score = 16427 (1621 + 14806)
+  Id = 13, score = 3837 (153 + 3684)
+  Id = 14, score = 104614 (1392 + 103222)
+  Id = 15, score = 7816 (320 + 7496)
+  Id = 16, score = 15860 (1934 + 13926)
+  Id = 17, score = 7580 (1400 + 6180)
+  Id = 18, score = 13346 (644 + 12702)
+  Id = 19, score = 7352 (1300 + 6052)
+  Id = 20, score = 12114 (1744 + 10370)
+  Id = 21, score = 1552 (620 + 932)
+  Id = 22, score = 10290 (2600 + 7690)
+  Id = 23, score = 2247 (911 + 1336)
+  Id = 24, score = 270402 (8574 + 261828)
+  Total = 629538.06 (57331.86 + 572206.20)
