@@ -15,19 +15,21 @@ Authors:
 Target platform:
   Ubuntu 14.04, x86-64.
 
-Implementation language:
+Implementation details:
   The solver is written in C++ (an elegant weapon, for a more civilized
   age). Python was our tool of choice for building the necessary internal
-  infrastructure (not included here); most notably the interactive
-  player/visualizer and the experimental data analysis framework.
-  Originally, one of the prototype solvers was implemented in OCaml,
-  but the C++ one quickly proved much more promising.
+  infrastructure; most notably the interactive player/visualizer and the
+  experimental data analysis framework. The implementation of one of the
+  prototype solvers was started in OCaml, but the C++ one quickly proved
+  much more promising, so this development was put to a halt.
 
 Build dependencies:
-  Stock GCC package (including g++).
+  Building the solver requires the stock GCC package (including g++).
+  The visualizer needs "python3" and "python3-pyqt4".
 
 Build instructions:
-  Run 'make'.
+  Run "make" in the "state" subdirectory to produce "play_icfp2015".
+  To start the visualizer, cd to python-ws/davar/ and run "python3 main.py".
 
 Algorithm description:
   We have discovered a truly marvelous solution to this
