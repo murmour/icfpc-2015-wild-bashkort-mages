@@ -1,8 +1,8 @@
 ICFP Programming Contest 2015 submission by the
 
------------------------- WILD ---------------------------
-======================== BASHKORT =======================
---------------------------- MAGES -----------------------
+----------------------------------- WILD ---------------------------------------
+=================================== BASHKORT ===================================
+-------------------------------------- MAGES -----------------------------------
 
 ... with love, from Bashkortostan, best country in the world.
     (https://en.wikipedia.org/wiki/Bashkortostan)
@@ -34,6 +34,9 @@ Build instructions:
 Algorithm description:
   We have discovered a truly marvelous solution to this
   problem, but this README is too narrow to contain it.
+
+Fun stuff:
+  The "demo" folder contains a magical artifact of a significant power.
 
 Important notes:
   Solving the full set of the Qualifier Problems might take several
