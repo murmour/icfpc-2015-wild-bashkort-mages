@@ -159,7 +159,7 @@ class TileWidget2(QtGui.QWidget):
         #print('calcpositions: %s' % self.state.cur_unit)
         if not self.state.cur_unit:
             return
-        
+
         def go(move, prev):
             t = self.xpos()
             self.seen[t] = (move, prev, self.state.cur_unit)
@@ -172,11 +172,11 @@ class TileWidget2(QtGui.QWidget):
                 else:
                     # lock
                     self.positions[self.xpos()] = self.state.cur_unit, m
-                    
+
         go(None, None)
         #for x in self.seen.keys():
         #    print(x)
-    
+
     def wheelEvent(self, ev):
         ev.accept()
         if ev.delta() > 0:
@@ -184,15 +184,15 @@ class TileWidget2(QtGui.QWidget):
         else:
             self.sel_rot -= 1
         self.mouseMoveEvent(ev)
-    
+
     def animating(self):
         return self.owner.act_play.isChecked() or self.owner.act_playb.isChecked()
-    
+
     def mousePressEvent(self, ev):
         if self.sel == None or not self.sel_valid:
             return
-        
-        cur = self.sel_pos        
+
+        cur = self.sel_pos
         lets = 'palbdk'
         lock_cmd = self.positions[cur][1]
         cmds = [lets[lock_cmd]]
@@ -204,18 +204,18 @@ class TileWidget2(QtGui.QWidget):
         for c in cmds:
             self.owner.doCommand(c)
         #print(''.join(cmds))
-        
-                    
+
+
     def mouseMoveEvent(self, ev):
-        
+
         if self.animating():
             return
-        
+
         def getCell():
             x, y = ev.x(), ev.y()
             h = SIZE * 42 // 50
             yy = max(0, y - (SIZE - h)) // h
-            if yy >= self.h:            
+            if yy >= self.h:
                 return None
             dx = SIZE // 2 if yy % 2 == 1 else 0
             x -= dx
@@ -225,9 +225,9 @@ class TileWidget2(QtGui.QWidget):
             if xx >= self.w:
                 return None
             return xx, yy
-        
+
         t = getCell()
-        
+
         if self.positions == None:
             self.calcPositions()
             #print(len(self.positions))
@@ -236,7 +236,7 @@ class TileWidget2(QtGui.QWidget):
         for r in range(6):
             if (t, r) in self.positions or (t, r) in self.seen:
                 rs.append(r)
-                
+
         if rs:
             self.sel_rot = self.sel_rot % len(rs)
             r = rs[self.sel_rot]
@@ -248,13 +248,13 @@ class TileWidget2(QtGui.QWidget):
                 self.sel_unit = self.seen[(t, r)][2]
                 self.sel_valid = False
             self.sel_pos = (t, r)
-        self.update()        
-        
-        
+        self.update()
+
+
 
     def xpos(self):
-        return self.state.cur_unit.pivot, self.state.rot 
-    
+        return self.state.cur_unit.pivot, self.state.rot
+
     def resetmins(self):
         self.setMinimumSize((self.w+1) * SIZE, self.h * SIZE * 42 // 50 + 10)
 
@@ -342,8 +342,8 @@ class TileWidget2(QtGui.QWidget):
         elif move == 5:
             self.state.rot -= 1
             if self.state.rot < 0: self.state.rot = self.state.max_rot - 1
-        
-    def undoMove(self, move):        
+
+    def undoMove(self, move):
         if move <= 3:
             m2 = move + 3
             if m2 >= 6:
@@ -352,9 +352,9 @@ class TileWidget2(QtGui.QWidget):
                                         [self.move_pnt(x, m2, 1) for x in self.state.cur_unit.members] )
         else:
             self.doMove(5 if move == 4 else 4)
-        
 
-    def calc_max_rot(self):        
+
+    def calc_max_rot(self):
         t = sorted(self.state.cur_unit.members)
         for i in range(6):
             self.doMove(4)
@@ -363,7 +363,7 @@ class TileWidget2(QtGui.QWidget):
                 #print('Maxrot = %d' % (i+1))
                 return i+1
         assert (False)
-        
+
 
     def placeUnit(self, seq, units):
         assert(self.state.unit_idx < len(seq))
@@ -385,7 +385,7 @@ class TileWidget2(QtGui.QWidget):
         self.state.rot = 0
         self.state.max_rot = self.calc_max_rot()
         self.state.rot = 0
-        
+
         return True
         #print(d)
         #print(unit)
@@ -447,7 +447,7 @@ class TileWidget2(QtGui.QWidget):
     def paintEvent(self, ev):
         if self.animating():
             self.sel = None
-        
+
         if not self.h:
             return
         p = QtGui.QPainter(self)
@@ -483,11 +483,11 @@ class TileWidget2(QtGui.QWidget):
 
         if self.state.pvisual and self.state.cur_unit:
             draw_text(self.state.cur_unit.pivot[0], self.state.cur_unit.pivot[1], self.state.pvisual)
-            
+
         if self.sel:
             for x, y in self.sel_unit.members:
                 draw_cell(x, y, 'green' if self.sel_valid else 'yellow')
-            draw_pivot(self.sel[0], self.sel[1], 'purple')            
+            draw_pivot(self.sel[0], self.sel[1], 'purple')
 
 
 
@@ -634,23 +634,23 @@ class TileEditor(QtGui.QMainWindow):
         self.wi = TileWidget2(self)
 
         self.frame_lbl = QtGui.QLabel('None')
-        self.act_next0 = cmn.Action(self, 'Last frame (F12)', 'first.png', self.nextFrame0, 'F12')
-        self.act_prev0 = cmn.Action(self, 'First frame (F11)', 'last.png', self.prevFrame0, 'F11')
-        self.act_next = cmn.Action(self, 'Next frame (F3)', 'next.png', self.nextFrame, 'F3', enabled=False)
-        self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'prev.png', self.prevFrame, 'F2', enabled=False)
-        self.act_playb = cmn.Action(self, 'Play back (F4)', 'control-180.png', self.startPlayback, 'F4', checkable=True)
-        self.act_play = cmn.Action(self, 'Play (F5)', 'play.png', self.startPlay, 'F5', checkable=True)
-        self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'hand-point.png', self.gotoMove, 'F1')
+        self.act_next0 = cmn.Action(self, 'Last frame (F12)', 'icons/first.png', self.nextFrame0, 'F12')
+        self.act_prev0 = cmn.Action(self, 'First frame (F11)', 'icons/last.png', self.prevFrame0, 'F11')
+        self.act_next = cmn.Action(self, 'Next frame (F3)', 'icons/next.png', self.nextFrame, 'F3', enabled=False)
+        self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'icons/prev.png', self.prevFrame, 'F2', enabled=False)
+        self.act_playb = cmn.Action(self, 'Play back (F4)', 'icons/control-180.png', self.startPlayback, 'F4', checkable=True)
+        self.act_play = cmn.Action(self, 'Play (F5)', 'icons/play.png', self.startPlay, 'F5', checkable=True)
+        self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'icons/hand-point.png', self.gotoMove, 'F1')
         self.act_togglefast = cmn.Action(self, 'Toggle fast', '', self.toggleFast, 'F8')
-        
-        self.act_lastm = cmn.Action(self, 'Back to last spawn (Delete)', 'undo.png', self.prevMove, 'Delete')
+
+        self.act_lastm = cmn.Action(self, 'Back to last spawn (Delete)', 'icons/undo.png', self.prevMove, 'Delete')
         self.addAction(self.act_togglefast)
 
         self.fastcb = QtGui.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
 
         layout = cmn.HBox([self.cbx, self.sizesl, self.frame_lbl,
-                           cmn.ToolBtn(self.act_lastm), 
+                           cmn.ToolBtn(self.act_lastm),
                            cmn.ToolBtn(self.act_gotomove),
                            cmn.ToolBtn(self.act_prev0),
                            cmn.ToolBtn(self.act_next0),
@@ -700,7 +700,7 @@ class TileEditor(QtGui.QMainWindow):
             self.powerwords = list(set([s for s in x if not s.startswith('#') and s.strip()]))
         for s in self.powerwords:
             assert(len(s) <= MAX_PLEN)
-        #print(self.powerwords)    
+        #print(self.powerwords)
 
     def calcScore(self, fname):
         with io.open(fname, 'r') as f:
@@ -755,11 +755,11 @@ class TileEditor(QtGui.QMainWindow):
         sol = [sol]
         os.makedirs('saves', exist_ok=True)
         fname = cmn.getOpenFileName(self, 'sol_save', 'Save solution', 'JSON Files (*.json)', True)
-        if not fname:         
+        if not fname:
             fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
         else:
             if not fname.endswith('.json'):
-                fname += '.json'        
+                fname += '.json'
         with io.open(fname, 'w') as f:
             f.write(json.dumps(sol))
         print('Saved to %s' % fname)
@@ -933,7 +933,7 @@ class TileEditor(QtGui.QMainWindow):
 
     def prevFrame(self):
         self.setFrame(self.cur_frame - 1)
-        
+
     def prevMove(self):
         self.prevFrame()
         self.setFrame(self.wi.state.last_spawn)
@@ -970,7 +970,7 @@ class TileEditor(QtGui.QMainWindow):
         self.wi.positions = None
         self.wi.seen = None
         self.wi.sel = None
-        self.updateStuff()        
+        self.updateStuff()
 
     def updateStuff(self):
         n_frames = len(self.frames)
@@ -985,7 +985,7 @@ class TileEditor(QtGui.QMainWindow):
         self.act_prev.setEnabled(idx > 0)
         self.wi.positions = None
         self.wi.update()
-        
+
 
     def doPlay(self):
         if self.act_play.isChecked():
