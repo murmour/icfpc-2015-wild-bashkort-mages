@@ -9,7 +9,7 @@ let mem_limit = ref None
 let cpu_cores = ref 1
 let power_phrases = ref []
 
-let _ =
+let () =
   Arg.parse (Arg.align
     [
       ("-f", Arg.String (fun f -> input_files := f :: !input_files),

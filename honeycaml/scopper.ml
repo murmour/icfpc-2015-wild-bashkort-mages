@@ -10,7 +10,7 @@ let problems_path = ref "../qualifier-problems/"
 let solutions_path = ref "../solutions/"
 let power_phrases = ref []
 
-let _ =
+let () =
   Arg.parse (Arg.align
     [
       ("-problems", Arg.String (fun s -> problems_path := s),
