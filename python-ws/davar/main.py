@@ -5,10 +5,153 @@ Created on Aug 7, 2015
 '''
 
 from PyQt4 import QtGui, QtCore
-import json, sys, copy, os
-import io#, time
-import re
-import common as cmn
+import json, sys, copy, os, itertools, io, re
+from datetime import datetime
+
+
+def allF(lst, f):
+    """
+    return True if all elements of lst satisfy f
+    """
+    for x in lst:
+        if not f(x):
+            return False
+    return True
+
+
+kTopAlign = 1
+kBottomAlign = 2
+
+def VBox(items, margin = 0, spacing = 5, align = None, stretch = None):
+    box = QtGui.QVBoxLayout()
+    box.setMargin(margin)
+    box.setSpacing(spacing)
+    if stretch == None:
+        stretch = [0] * len(items)
+    else:
+        assert(len(stretch) == len(items))
+    if align == kBottomAlign:
+        box.setAlignment(QtCore.Qt.AlignBottom)
+    elif align == kTopAlign:
+        box.setAlignment(QtCore.Qt.AlignTop)
+    for x, st in zip(items, stretch):
+        if isinstance(x, QtGui.QLayout):
+            box.addLayout(x, st)
+        else:
+            box.addWidget(x, st)
+    return box
+
+
+kLeftAlign = 1
+kRightAlign = 2
+
+def HBox(items, margin = 0, spacing = 5, align = None, stretch = None):
+    box = QtGui.QHBoxLayout()
+    box.setMargin(margin)
+    box.setSpacing(spacing)
+    if stretch == None:
+        stretch = [0] * len(items)
+    else:
+        assert(len(stretch) == len(items))
+    if align == kRightAlign:
+        box.setAlignment(QtCore.Qt.AlignRight)
+    elif align == kLeftAlign:
+        box.setAlignment(QtCore.Qt.AlignLeft)
+    for x, st in zip(items, stretch):
+        if isinstance(x, QtGui.QLayout):
+            box.addLayout(x, st)
+        elif isinstance(x, QtGui.QSpacerItem):
+            box.addSpacerItem(x)
+        else:
+            box.addWidget(x, st)
+    return box
+
+
+icons_cache = {}
+
+def GetIcon(fname):
+    if not fname:
+        fname = ''
+    if fname not in icons_cache:
+        icons_cache[fname] = QtGui.QIcon(fname)
+    return icons_cache[fname]
+
+
+def Action(owner, descr, icon, handler = None, shortcut = None,
+           statustip = None, enabled = True, checkable = False,
+           checked = None, *, bold = False):
+    act = QtGui.QAction(GetIcon(icon), descr, owner)
+    act.setIconVisibleInMenu(True)
+
+    if bold:
+        f = act.font()
+        f.setBold(True)
+        act.setFont(f)
+
+    if not (shortcut is None):
+        act.setShortcut(shortcut)
+
+    if not (statustip is None):
+        act.setStatusTip(statustip)
+    if not (handler is None):
+        act.triggered.connect(handler)
+    act.setEnabled(enabled)
+    if checkable:
+        act.setCheckable(True)
+    if checked != None:
+        act.setCheckable(True)
+        act.setChecked(checked)
+    return act
+
+def Separator(owner):
+    res = QtGui.QAction(owner)
+    res.setSeparator(True)
+    return res
+
+def ToolBtn(action):
+    res = QtGui.QToolButton()
+    res.setDefaultAction(action)
+    res.setAutoRaise(True)
+    return res
+
+def ensureLayout(widget):
+    if isinstance(widget, QtGui.QWidget):
+        return VBox([widget])
+    return widget
+
+def ensureWidget(layout):
+    if isinstance(layout, QtGui.QWidget):
+        return layout
+    tmp = QtGui.QWidget()
+    tmp.setLayout(layout)
+    return tmp
+
+def getOpenFileName(owner, ident, title, filters, save=False):
+    ident = 'openfile_' + ident
+    s = QtCore.QSettings('PlatBox', 'PlatBox')
+    path = s.value(ident, defaultValue='')
+    if save:
+        opts = QtGui.QFileDialog.DontConfirmOverwrite if save == 1 else 0
+        fname = QtGui.QFileDialog.getSaveFileName(None, title, path, filters, opts)
+    else:
+        fname = QtGui.QFileDialog.getOpenFileName(None, title, path, filters)
+    if fname:
+        path = os.path.dirname(fname)
+        s.setValue(ident, path)
+    return fname
+
+def Frame(widget, width = 2):
+    """
+    Adds a frame around a given widget/layout
+    """
+    fr = QtGui.QFrame()
+    fr.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
+    fr.setLineWidth(width)
+    fr.setStyleSheet(".QFrame { color:gray }")
+    fr.setLayout(ensureLayout(widget))
+    widget.cmn_frame = fr
+    return fr
+
 
 fname = '../../data/problems/problem_%d.json'
 
@@ -128,8 +271,6 @@ class TileWidget(QtGui.QWidget):
         j, i = self.pivot
         dx = self.SIZE // 2 if i % 2 == 1 else 0
         p.drawEllipse(QtCore.QPoint(dx + j * self.SIZE + self.SIZE // 2, i * self.SIZE * 42 // 50 + self.SIZE // 2), 5, 5)
-
-
 
 
 class TileWidget2(QtGui.QWidget):
@@ -280,7 +421,7 @@ class TileWidget2(QtGui.QWidget):
                 return False
             return True
 
-        return cmn.allF(self.state.cur_unit.members, f)
+        return allF(self.state.cur_unit.members, f)
 
     def move_pnt(self, p, dir, d):
         if d < 0:
@@ -421,7 +562,7 @@ class TileWidget2(QtGui.QWidget):
             self.cells[y][x] = 1
 
         # collapse here
-        new_cells = [row for row in self.cells if not cmn.allF(row, lambda x: x == 1)]
+        new_cells = [row for row in self.cells if not allF(row, lambda x: x == 1)]
         size = len(self.state.cur_unit.members)
         ls = self.h - len(new_cells)
         if ls > 0:
@@ -490,7 +631,6 @@ class TileWidget2(QtGui.QWidget):
             draw_pivot(self.sel[0], self.sel[1], 'purple')
 
 
-
 class UnitsPanel(QtGui.QDockWidget):
 
     def __init__(self, owner):
@@ -510,9 +650,9 @@ class UnitsPanel(QtGui.QDockWidget):
             t.setData(x)
             return t
 
-        layout = cmn.VBox([make(x) for x in units])
+        layout = VBox([make(x) for x in units])
         wrap = QtGui.QScrollArea()
-        wrap.setWidget(cmn.ensureWidget(layout))
+        wrap.setWidget(ensureWidget(layout))
         self.setWidget(wrap)
 
         #self.cbx.clear()
@@ -634,41 +774,44 @@ class TileEditor(QtGui.QMainWindow):
         self.wi = TileWidget2(self)
 
         self.frame_lbl = QtGui.QLabel('None')
-        self.act_next0 = cmn.Action(self, 'Last frame (F12)', 'icons/first.png', self.nextFrame0, 'F12')
-        self.act_prev0 = cmn.Action(self, 'First frame (F11)', 'icons/last.png', self.prevFrame0, 'F11')
-        self.act_next = cmn.Action(self, 'Next frame (F3)', 'icons/next.png', self.nextFrame, 'F3', enabled=False)
-        self.act_prev = cmn.Action(self, 'Prev frame (F2)', 'icons/prev.png', self.prevFrame, 'F2', enabled=False)
-        self.act_playb = cmn.Action(self, 'Play back (F4)', 'icons/control-180.png', self.startPlayback, 'F4', checkable=True)
-        self.act_play = cmn.Action(self, 'Play (F5)', 'icons/play.png', self.startPlay, 'F5', checkable=True)
-        self.act_gotomove = cmn.Action(self, 'Go to move... (F1)', 'icons/hand-point.png', self.gotoMove, 'F1')
-        self.act_togglefast = cmn.Action(self, 'Toggle fast', '', self.toggleFast, 'F8')
+        self.act_next0 = Action(self, 'Last frame (F12)', 'icons/first.png', self.nextFrame0, 'F12')
+        self.act_prev0 = Action(self, 'First frame (F11)', 'icons/last.png', self.prevFrame0, 'F11')
+        self.act_next = Action(self, 'Next frame (F3)', 'icons/next.png', self.nextFrame, 'F3', enabled=False)
+        self.act_prev = Action(self, 'Prev frame (F2)', 'icons/prev.png', self.prevFrame, 'F2', enabled=False)
+        self.act_playb = Action(self, 'Play back (F4)', 'icons/control-180.png', self.startPlayback, 'F4', checkable=True)
+        self.act_play = Action(self, 'Play (F5)', 'icons/play.png', self.startPlay, 'F5', checkable=True)
+        self.act_gotomove = Action(self, 'Go to move... (F1)', 'icons/hand-point.png', self.gotoMove, 'F1')
+        self.act_togglefast = Action(self, 'Toggle fast', '', self.toggleFast, 'F8')
 
-        self.act_lastm = cmn.Action(self, 'Back to last spawn (Delete)', 'icons/undo.png', self.prevMove, 'Delete')
+        self.act_lastm = Action(self, 'Back to last spawn (Delete)', 'icons/undo.png', self.prevMove, 'Delete')
         self.addAction(self.act_togglefast)
 
         self.fastcb = QtGui.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
 
-        layout = cmn.HBox([self.cbx, self.sizesl, self.frame_lbl,
-                           cmn.ToolBtn(self.act_lastm),
-                           cmn.ToolBtn(self.act_gotomove),
-                           cmn.ToolBtn(self.act_prev0),
-                           cmn.ToolBtn(self.act_next0),
-                           cmn.ToolBtn(self.act_prev),
-                           cmn.ToolBtn(self.act_next), cmn.ToolBtn(self.act_playb), cmn.ToolBtn(self.act_play), self.fastcb])
+        layout = HBox([self.cbx, self.sizesl, self.frame_lbl,
+                       ToolBtn(self.act_lastm),
+                       ToolBtn(self.act_gotomove),
+                       ToolBtn(self.act_prev0),
+                       ToolBtn(self.act_next0),
+                       ToolBtn(self.act_prev),
+                       ToolBtn(self.act_next),
+                       ToolBtn(self.act_playb),
+                       ToolBtn(self.act_play),
+                       self.fastcb])
 
         #wrap = QtGui.QScrollArea()
         #wrap.setWidget(self.wi)
         wrap = self.wi
 
-        layout = cmn.VBox([layout, wrap])
-        self.setCentralWidget(cmn.ensureWidget(layout))
+        layout = VBox([layout, wrap])
+        self.setCentralWidget(ensureWidget(layout))
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('Menu')
-        self.act_showsol = cmn.Action(self, 'Show solution', '', self.showSol, 'F9')
-        self.act_savesol = cmn.Action(self, 'Save solution', '', self.doSave, 'Ctrl+S')
-        self.act_opensol = cmn.Action(self, 'Open solution file...', '', self.doOpen, 'Ctrl+O')
+        self.act_showsol = Action(self, 'Show solution', '', self.showSol, 'F9')
+        self.act_savesol = Action(self, 'Save solution', '', self.doSave, 'Ctrl+S')
+        self.act_opensol = Action(self, 'Open solution file...', '', self.doOpen, 'Ctrl+O')
         fileMenu.addAction(self.act_opensol)
         fileMenu.addAction(self.act_showsol)
         fileMenu.addAction(self.act_savesol)
@@ -754,9 +897,9 @@ class TileEditor(QtGui.QMainWindow):
         sol['solution'] = self.cmds
         sol = [sol]
         os.makedirs('saves', exist_ok=True)
-        fname = cmn.getOpenFileName(self, 'sol_save', 'Save solution', 'JSON Files (*.json)', True)
+        fname = getOpenFileName(self, 'sol_save', 'Save solution', 'JSON Files (*.json)', True)
         if not fname:
-            fname = 'saves/task_%d_%s.json' % (self.data['id'], cmn.isoNow())
+            fname = 'saves/task_%d_%s.json' % (self.data['id'], datetime.now().isoformat())
         else:
             if not fname.endswith('.json'):
                 fname += '.json'
@@ -765,7 +908,7 @@ class TileEditor(QtGui.QMainWindow):
         print('Saved to %s' % fname)
 
     def doOpen(self):
-        fname = cmn.getOpenFileName(self, 'sol', 'Open solution', 'JSON Files (*.json)')
+        fname = getOpenFileName(self, 'sol', 'Open solution', 'JSON Files (*.json)')
         if fname:
             self.solname = fname
         self.showSol()
