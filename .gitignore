@@ -8,7 +8,7 @@ __pycache__
 *.o
 */Debug
 */Release
-honeycaml/generated/*
+_generated
 *.native
 *.byte
 _build
