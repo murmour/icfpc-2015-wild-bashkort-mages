@@ -1,9 +1,12 @@
-GEN_DIR := generated
+GEN_DIR := _generated
 ATDGEN := atdgen -j-std -j-strict-fields
 OBUILD_FLAGS := $(CORES) -I $(GEN_DIR) -use-ocamlfind -cflags -w,-30-40
 
-atd: game.atd solution.atd
-	-mkdir $(GEN_DIR) 2>/dev/null
+
+$(GEN_DIR):
+	mkdir $(GEN_DIR)
+
+atd: game.atd solution.atd $(GEN_DIR)
 	$(ATDGEN) -t game.atd -o $(GEN_DIR)/js_Game
 	$(ATDGEN) -j game.atd -o $(GEN_DIR)/js_Game
 	$(ATDGEN) -t solution.atd -o $(GEN_DIR)/js_Solution

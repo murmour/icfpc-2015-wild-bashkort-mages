@@ -1,3 +1,2 @@
 <**/*.ml>: annot
-<**/*>: package(batteries, atdgen, mikmatch_pcre)
-<scopper.ml>: syntax(camlp4o)
+<**/*>: package(batteries, atdgen)

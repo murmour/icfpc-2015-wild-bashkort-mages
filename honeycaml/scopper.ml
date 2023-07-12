@@ -56,15 +56,9 @@ type set_score =
   }
 
 
-let parse_filename name : solver_info =
-  match Filename.basename name with
-    | RE "solution_" (digit+ as _problem_id: int)
-         "_" (alpha+ as name)
-         "_" (digit+ as revision: int)
-         ".json" ->
-        { name; revision }
-    | _ ->
-        assert false
+let parse_filename (name: string) : solver_info =
+  Scanf.sscanf name "solution_%[0-9]_%[a-zA-Z]_%u.json" (fun _ name revision ->
+    { name; revision })
 
 let read_filenames dir =
   dir |> Sys.readdir |> Array.to_list

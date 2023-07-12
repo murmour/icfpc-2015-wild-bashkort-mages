@@ -48,7 +48,7 @@ let set_filled (b: t) (c: cell) (v: bool) =
 
 let rec move (c: cell) dir ~len : cell =
   if len < 0 then
-    move c (reverse_dir dir) (-len)
+    move c (reverse_dir dir) ~len:(-len)
   else if (c.y land 1) = 0 then
     match dir with
       | L -> { c with x = c.x - len }
