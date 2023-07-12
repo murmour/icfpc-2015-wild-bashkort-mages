@@ -141,7 +141,7 @@ def getOpenFileName(owner, ident, title, filters, save=False):
     return fname
 
 
-fname = '../../data/problems/problem_%d.json'
+fname = '../data/problems/problem_%d.json'
 
 SIZE = 25
 N_PROBLEMS = 25
@@ -826,7 +826,7 @@ class TileEditor(QtWidgets.QMainWindow):
         self.wi.update()
 
     def loadpowers(self):
-        with io.open('../../data/power-words.txt') as f:
+        with io.open('../data/power-words.txt') as f:
             x = f.read().split('\n')
             self.powerwords = list(set([s for s in x if not s.startswith('#') and s.strip()]))
         for s in self.powerwords:
@@ -1168,14 +1168,14 @@ def getScore(filename):
 def main():
     #print(gen_rand(17, 10))
     #print(decode_cmd('ctulhu'))
-    #print(getScore('../../data/solutions/solution_1_rip_2.json'))
-    #print(getScore('../../data/solutions/solution_2_rip_2.json'))
+    #print(getScore('../data/solutions/solution_1_rip_2.json'))
+    #print(getScore('../data/solutions/solution_2_rip_2.json'))
     #return
 
     #return
     app = QtWidgets.QApplication(sys.argv)
     #fname = '$$$'
-    fname = '../../data/solutions/solution_23_rip_2.json'
+    fname = '../data/solutions/solution_23_rip_2.json'
     if len(sys.argv) > 1:
         fname = sys.argv[1]
     _ = TileEditor(fname)

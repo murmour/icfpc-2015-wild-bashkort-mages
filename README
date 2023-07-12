@@ -25,11 +25,11 @@ Implementation details:
 
 Build dependencies:
   Building the solver requires the stock GCC package (including g++).
-  The visualizer needs "python3" and "python3-pyqt4".
+  The visualizer needs "python3" and "python3-pyside2".
 
 Build instructions:
   Run "make" in the "state" subdirectory to produce "play_icfp2015".
-  To start the visualizer, cd to python-ws/davar/ and run "python3 main.py".
+  To start the visualizer, cd to davar/ and run "python3 main.py".
 
 Algorithm description:
   We have discovered a truly marvelous solution to this
