@@ -4,7 +4,7 @@ Created on Aug 7, 2015
 @author: linesprower
 '''
 
-from PyQt4 import QtGui, QtCore
+from PySide2 import QtGui, QtCore, QtWidgets
 import json, sys, copy, os, itertools, io, re
 from datetime import datetime
 
@@ -23,7 +23,7 @@ kTopAlign = 1
 kBottomAlign = 2
 
 def VBox(items, margin = 0, spacing = 5, align = None, stretch = None):
-    box = QtGui.QVBoxLayout()
+    box = QtWidgets.QVBoxLayout()
     box.setMargin(margin)
     box.setSpacing(spacing)
     if stretch == None:
@@ -35,7 +35,7 @@ def VBox(items, margin = 0, spacing = 5, align = None, stretch = None):
     elif align == kTopAlign:
         box.setAlignment(QtCore.Qt.AlignTop)
     for x, st in zip(items, stretch):
-        if isinstance(x, QtGui.QLayout):
+        if isinstance(x, QtWidgets.QLayout):
             box.addLayout(x, st)
         else:
             box.addWidget(x, st)
@@ -46,7 +46,7 @@ kLeftAlign = 1
 kRightAlign = 2
 
 def HBox(items, margin = 0, spacing = 5, align = None, stretch = None):
-    box = QtGui.QHBoxLayout()
+    box = QtWidgets.QHBoxLayout()
     box.setMargin(margin)
     box.setSpacing(spacing)
     if stretch == None:
@@ -58,9 +58,9 @@ def HBox(items, margin = 0, spacing = 5, align = None, stretch = None):
     elif align == kLeftAlign:
         box.setAlignment(QtCore.Qt.AlignLeft)
     for x, st in zip(items, stretch):
-        if isinstance(x, QtGui.QLayout):
+        if isinstance(x, QtWidgets.QLayout):
             box.addLayout(x, st)
-        elif isinstance(x, QtGui.QSpacerItem):
+        elif isinstance(x, QtWidgets.QSpacerItem):
             box.addSpacerItem(x)
         else:
             box.addWidget(x, st)
@@ -80,7 +80,7 @@ def GetIcon(fname):
 def Action(owner, descr, icon, handler = None, shortcut = None,
            statustip = None, enabled = True, checkable = False,
            checked = None, *, bold = False):
-    act = QtGui.QAction(GetIcon(icon), descr, owner)
+    act = QtWidgets.QAction(GetIcon(icon), descr, owner)
     act.setIconVisibleInMenu(True)
 
     if bold:
@@ -104,25 +104,25 @@ def Action(owner, descr, icon, handler = None, shortcut = None,
     return act
 
 def Separator(owner):
-    res = QtGui.QAction(owner)
+    res = QtWidgets.QAction(owner)
     res.setSeparator(True)
     return res
 
 def ToolBtn(action):
-    res = QtGui.QToolButton()
+    res = QtWidgets.QToolButton()
     res.setDefaultAction(action)
     res.setAutoRaise(True)
     return res
 
 def ensureLayout(widget):
-    if isinstance(widget, QtGui.QWidget):
+    if isinstance(widget, QtWidgets.QWidget):
         return VBox([widget])
     return widget
 
 def ensureWidget(layout):
-    if isinstance(layout, QtGui.QWidget):
+    if isinstance(layout, QtWidgets.QWidget):
         return layout
-    tmp = QtGui.QWidget()
+    tmp = QtWidgets.QWidget()
     tmp.setLayout(layout)
     return tmp
 
@@ -131,26 +131,14 @@ def getOpenFileName(owner, ident, title, filters, save=False):
     s = QtCore.QSettings('PlatBox', 'PlatBox')
     path = s.value(ident, defaultValue='')
     if save:
-        opts = QtGui.QFileDialog.DontConfirmOverwrite if save == 1 else 0
-        fname = QtGui.QFileDialog.getSaveFileName(None, title, path, filters, opts)
+        opts = QtWidgets.QFileDialog.DontConfirmOverwrite if save == 1 else 0
+        fname = QtWidgets.QFileDialog.getSaveFileName(None, title, path, filters, opts)[0]
     else:
-        fname = QtGui.QFileDialog.getOpenFileName(None, title, path, filters)
+        fname = QtWidgets.QFileDialog.getOpenFileName(None, title, path, filters)[0]
     if fname:
         path = os.path.dirname(fname)
         s.setValue(ident, path)
     return fname
-
-def Frame(widget, width = 2):
-    """
-    Adds a frame around a given widget/layout
-    """
-    fr = QtGui.QFrame()
-    fr.setFrameStyle(QtGui.QFrame.Box | QtGui.QFrame.Plain)
-    fr.setLineWidth(width)
-    fr.setStyleSheet(".QFrame { color:gray }")
-    fr.setLayout(ensureLayout(widget))
-    widget.cmn_frame = fr
-    return fr
 
 
 fname = '../../data/problems/problem_%d.json'
@@ -210,27 +198,27 @@ class Frame:
         self.state = copy.deepcopy(state)
 
 
-class InfoPanel(QtGui.QDockWidget):
+class InfoPanel(QtWidgets.QDockWidget):
 
     def __init__(self, owner):
 
-        QtGui.QDockWidget.__init__(self, ' Solution info')
+        QtWidgets.QDockWidget.__init__(self, ' Solution info')
 
         self.owner = owner
         self.setObjectName('info_panel') # for state saving
 
-        e = QtGui.QTextEdit()
+        e = QtWidgets.QTextEdit()
         e.setFont(QtGui.QFont('Consolas', 10))
         e.setReadOnly(True)
         self.e = e
         self.setWidget(e)
 
-        self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.setFeatures(QtWidgets.QDockWidget.DockWidgetMovable)
 
     def setData(self, text):
         self.e.setPlainText(text)
 
-class TileWidget(QtGui.QWidget):
+class TileWidget(QtWidgets.QWidget):
 
     SIZE = 25
 
@@ -239,7 +227,7 @@ class TileWidget(QtGui.QWidget):
         self.cells = []
         self.w = 0
         self.h = 0
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
 
     def setData(self, data):
         self.pivot = data.pivot
@@ -273,10 +261,10 @@ class TileWidget(QtGui.QWidget):
         p.drawEllipse(QtCore.QPoint(dx + j * self.SIZE + self.SIZE // 2, i * self.SIZE * 42 // 50 + self.SIZE // 2), 5, 5)
 
 
-class TileWidget2(QtGui.QWidget):
+class TileWidget2(QtWidgets.QWidget):
 
     def __init__(self, owner):
-        QtGui.QWidget.__init__(self)
+        QtWidgets.QWidget.__init__(self)
         self.owner = owner
         self.h = None
         self.state = None
@@ -631,17 +619,17 @@ class TileWidget2(QtGui.QWidget):
             draw_pivot(self.sel[0], self.sel[1], 'purple')
 
 
-class UnitsPanel(QtGui.QDockWidget):
+class UnitsPanel(QtWidgets.QDockWidget):
 
     def __init__(self, owner):
 
-        QtGui.QDockWidget.__init__(self, ' Units')
+        QtWidgets.QDockWidget.__init__(self, ' Units')
 
         self.owner = owner
         self.setObjectName('object_creator') # for state saving
 
-        self.setWidget(QtGui.QWidget())
-        self.setFeatures(QtGui.QDockWidget.DockWidgetMovable)
+        self.setWidget(QtWidgets.QWidget())
+        self.setFeatures(QtWidgets.QDockWidget.DockWidgetMovable)
 
     def setData(self, units):
         self.units = units
@@ -651,7 +639,7 @@ class UnitsPanel(QtGui.QDockWidget):
             return t
 
         layout = VBox([make(x) for x in units])
-        wrap = QtGui.QScrollArea()
+        wrap = QtWidgets.QScrollArea()
         wrap.setWidget(ensureWidget(layout))
         self.setWidget(wrap)
 
@@ -734,10 +722,10 @@ qt_keys = {
 def decode_cmd(s):
     return ' '.join([cmd_names[cmd_lets[c]] for c in s])
 
-class TileEditor(QtGui.QMainWindow):
+class TileEditor(QtWidgets.QMainWindow):
 
     def __init__(self, solname):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
 
         self.solname = solname
         self.loadpowers()
@@ -763,8 +751,8 @@ class TileEditor(QtGui.QMainWindow):
         if t:
             self.restoreState(t, 0)
 
-        self.cbx = QtGui.QComboBox()
-        self.sizesl = QtGui.QSlider()
+        self.cbx = QtWidgets.QComboBox()
+        self.sizesl = QtWidgets.QSlider()
         self.sizesl.setOrientation(QtCore.Qt.Horizontal)
         self.sizesl.setMaximumWidth(100)
         self.sizesl.setMinimum(10)
@@ -773,7 +761,7 @@ class TileEditor(QtGui.QMainWindow):
         self.sizesl.valueChanged.connect(self.changeSz)
         self.wi = TileWidget2(self)
 
-        self.frame_lbl = QtGui.QLabel('None')
+        self.frame_lbl = QtWidgets.QLabel('None')
         self.act_next0 = Action(self, 'Last frame (F12)', 'icons/first.png', self.nextFrame0, 'F12')
         self.act_prev0 = Action(self, 'First frame (F11)', 'icons/last.png', self.prevFrame0, 'F11')
         self.act_next = Action(self, 'Next frame (F3)', 'icons/next.png', self.nextFrame, 'F3', enabled=False)
@@ -786,7 +774,7 @@ class TileEditor(QtGui.QMainWindow):
         self.act_lastm = Action(self, 'Back to last spawn (Delete)', 'icons/undo.png', self.prevMove, 'Delete')
         self.addAction(self.act_togglefast)
 
-        self.fastcb = QtGui.QCheckBox('Fast(F8)')
+        self.fastcb = QtWidgets.QCheckBox('Fast(F8)')
         self.fastcb.toggled.connect(self.onToggleFast)
 
         layout = HBox([self.cbx, self.sizesl, self.frame_lbl,
@@ -914,7 +902,7 @@ class TileEditor(QtGui.QMainWindow):
         self.showSol()
 
     def gotoMove(self):
-        val, ok = QtGui.QInputDialog.getInt(self, 'Go to move', 'Go to move', self.cur_frame+1)
+        val, ok = QtWidgets.QInputDialog.getInt(self, 'Go to move', 'Go to move', self.cur_frame+1)
         if ok:
             self.setFrame(val-1)
 
@@ -1172,7 +1160,7 @@ app = None
 def getScore(filename):
     global app
     if app == None:
-        app = QtGui.QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
     x = TileEditor('')
     return x.calcScore(filename)
 
@@ -1185,7 +1173,7 @@ def main():
     #return
 
     #return
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     #fname = '$$$'
     fname = '../../data/solutions/solution_23_rip_2.json'
     if len(sys.argv) > 1:
